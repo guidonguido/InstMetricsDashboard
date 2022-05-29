@@ -3,7 +3,7 @@ import InstanceList from "./InstaneList";
 import { Layout } from "antd";
 import { Content, Footer } from "antd/lib/layout/layout";
 
-const Main: React.FC = () => {
+const Main = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Navbar/>
