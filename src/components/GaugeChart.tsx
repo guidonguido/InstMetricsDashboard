@@ -8,7 +8,8 @@ export interface GaugeChartContent {
 
 const GaugeChart: FC<GaugeChartContent> = props => {
   const config = {
-    percent: 0.0,
+    style:{height:"90px", width:"90px"},
+    percent: props.percent / 100 || 0.0,
     range: {
       color: 'l(1) 0:#B8E1FF 1:#3D76DD'
     },
@@ -31,16 +32,17 @@ const GaugeChart: FC<GaugeChartContent> = props => {
           lineHeight: '14px',
           color: '#4B535E',
         },
-        formatter: () => '加载进度',
+        formatter: () => 'None',
       },
     },
   };
 
-  props.percent && (config.percent = props.percent/100);
   props.percent && (config.statistic.title.formatter = () => `${props.percent}%`);
   props.title && (config.statistic.content.formatter = () => props.title);
 
-  return <Gauge {...config} />;
+  return(
+    <Gauge {...config} />
+  ) 
 };
 
 export default GaugeChart;

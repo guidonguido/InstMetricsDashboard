@@ -2,6 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import {Row, Col} from 'antd/lib/grid';
 import { ConnInfo, Resources } from "../models/Resources";
 import GaugeChart from "./GaugeChart";
+import LinePlot, { PlotData } from "./LinePlot";
 import { List } from 'antd';
 import "./InstanceList.css"
 
@@ -13,6 +14,7 @@ export interface InnstaceMetricsContent {
 }
 
 const InstanceList = () => {
+  // Map<instanceUID, InstanceMetricsContent>
   const [instanceMap, setInstanceMap] = useState<Map<string, InnstaceMetricsContent>>(new Map<string, InnstaceMetricsContent>());
 
   useEffect(() => {
@@ -60,6 +62,9 @@ const InstanceList = () => {
 
     if ( newInstanceMap.has("inst-asdasdas") ) {
       newInstanceMap.get("inst-asdasdas")!.resourcesHisory.push(resList[0]);
+      if(newInstanceMap.get("inst-asdda2s")!.resourcesHisory.length > 10) {
+        newInstanceMap.get("inst-asdda2s")!.resourcesHisory.shift();
+      }
     } else {
       newInstanceMap = newInstanceMap.set("inst-asdasdas", { 
         instanceUID: "inst-asdasdas",
@@ -71,6 +76,9 @@ const InstanceList = () => {
 
     if ( newInstanceMap.has("inst-asdda2s") ) {
       newInstanceMap.get("inst-asdda2s")!.resourcesHisory.push(resList[1]);
+      if(newInstanceMap.get("inst-asdda2s")!.resourcesHisory.length > 10) {
+        newInstanceMap.get("inst-asdda2s")!.resourcesHisory.shift();
+      }
     } else {
       newInstanceMap = newInstanceMap.set("inst-asdda2s", { 
         instanceUID: "inst-asdda2s",
@@ -95,6 +103,26 @@ const InstanceList = () => {
 }
 
 const InstanceMetrics: FC<InnstaceMetricsContent> = props => {
+
+  const getCPUHistory = (props: InnstaceMetricsContent) => {
+    const historyLen = props.resourcesHisory.length;
+    const history: PlotData[] = props.resourcesHisory.map( (res: Resources, index: number) => { 
+      return {type:'CPU', value: res.cpu, timestamp: 10-index}
+    } );
+    for( let i = historyLen; i < 10; i++ ) {
+      history.unshift({type:'CPU', value: undefined, timestamp: i});
+    }
+    return history;
+  };
+
+  const getLatencyHistory = (props: InnstaceMetricsContent, connUid: string) => {
+    const history: PlotData[] = props.resourcesHisory.map( (res: Resources, index: number) => { 
+      const lat = res.connections.find(conn => conn.connUid === connUid)?.latency;
+      return {type:'Latency', value: lat, timestamp: index}
+    } );
+    return history;
+  }
+
   console.log("InstanceMetrics" + props.instanceUID);
   return (
     <div className='instance-box'>
@@ -102,15 +130,16 @@ const InstanceMetrics: FC<InnstaceMetricsContent> = props => {
         < Col span={18} className="title instance-el">{props.studentName.toUpperCase()} {props.studentId.toLowerCase()}</Col>
       </Row>
       <Row justify="center">
-        < Col span={6} className="utilization-box instance-el">
+        < Col span={4} className="utilization-box instance-el">
           CPU UTILIZATION
           <Row>
             <Col span={12}> <GaugeChart title="CPU" percent={props.resourcesHisory.at(-1)!.cpu}/> </Col>
             <Col span={12}><GaugeChart title="MEM" percent={props.resourcesHisory.at(-1)!.mem}/></Col>
           </Row>
         </Col>
-        < Col span={12} className="utilization-grp instance-el">
+        < Col span={14} className="utilization-grp instance-el">
           <Row justify='center'> CPU HYSTORIC GRAPH </Row>
+          <LinePlot data={getCPUHistory(props)}/>
           {props.resourcesHisory.map((res: Resources, index: number) => <Row key={"cpu"+props.instanceUID+index} justify="start">{`Time: ${new Date(res.timestamp)} CPU:${res.cpu}%`}</Row>)}
         </Col>
       </Row>
@@ -119,6 +148,7 @@ const InstanceMetrics: FC<InnstaceMetricsContent> = props => {
           <Row justify="center">CONNECTED PAGES</Row>
           <List>
             {props.resourcesHisory.at(-1)!.connections.map((conn: ConnInfo) => <List.Item key={conn.connUid}>IP: {conn.IP} Latency: {conn.latency}ms</List.Item>)}
+            {props.resourcesHisory.at(-1)!.connections.map((conn: ConnInfo) => <LinePlot data={getLatencyHistory(props, conn.connUid)}/>)}
           </List>
         </Col>
       </Row>
