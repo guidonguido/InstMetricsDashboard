@@ -1,11 +1,11 @@
 import { Header } from "antd/lib/layout/layout";
-import { ReactComponent as SvgLogo } from  '../assets/logo.svg';
+import Logo from '../Logo/Logo';
 import './Navbar.css';
 const Navbar = () => {
   return (
     <>
       <Header className="menuBar">
-        <SvgLogo className="logo" />
+        <Logo widthPx={55} className="logo" />
         <div className="pageTitle"> CrownLabs Exams Dashboard </div> 
       </Header>
     </>

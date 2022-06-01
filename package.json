@@ -1,5 +1,5 @@
 {
-  "name": "cl-instmetrics-dashboard",
+  "name": "InstMetricsDashboard",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

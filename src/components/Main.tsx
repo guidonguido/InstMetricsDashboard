@@ -1,5 +1,5 @@
-import Navbar from "./Navbar";
-import InstanceList from "./InstaneList";
+import Navbar from "./Navbar/Navbar";
+import InstanceList from "./Instance/InstanceList";
 import { Layout } from "antd";
 import { Content, Footer } from "antd/lib/layout/layout";
 
