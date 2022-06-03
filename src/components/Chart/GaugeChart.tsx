@@ -37,7 +37,8 @@ const GaugeChart: FC<GaugeChartContent> = props => {
     },
   };
 
-  props.percent && (config.statistic.title.formatter = () => `${props.percent}%`);
+  props.percent && (config.statistic.title.formatter = () => `${props.percent > 100 ? 100 : props.percent}%`);
+  props.percent > 99 && ( config.statistic.title.style.fontSize = "0.9em" );
   props.title && (config.statistic.content.formatter = () => props.title);
 
   return(

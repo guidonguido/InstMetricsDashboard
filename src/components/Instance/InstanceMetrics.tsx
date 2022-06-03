@@ -7,7 +7,9 @@ import ConnectedCol from "./ConnectedCol";
 
 import {Row, Col} from 'antd/lib/grid';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Spin } from 'antd';
+
+import './InstanceMetrics.css';
 
 export interface InstaceMetricsContent {
   instanceUID: string;
@@ -34,7 +36,8 @@ const InstanceMetrics: FC<InstaceMetricsContent> = props => {
       }
     }
     props.resourcesHisory.forEach( (res: Resources) => { 
-      history.push({type:'CPU', value: res.cpu, timestamp: i++});
+      const cpu = res.cpu > 100 ? 100 : res.cpu;
+      history.push({type:'CPU', value: cpu, timestamp: i++});
     } );
     return history;
   };
@@ -58,23 +61,28 @@ const InstanceMetrics: FC<InstaceMetricsContent> = props => {
       </Row>
       {showMetrics && <Row justify="center">
         < Col span={4} className="utilization-box instance-el">
-          CPU UTILIZATION
-          <Row>
-            <Col span={12}> <GaugeChart title="CPU" percent={props.resourcesHisory.at(-1)!.cpu}/> </Col>
-            <Col span={12}><GaugeChart title="MEM" percent={props.resourcesHisory.at(-1)!.mem}/></Col>
-          </Row>
+          SYSTEM LOAD
+          { ( props.resourcesHisory.length === 0 && 
+            <Spin tip='Waiting for data'/> ) ||
+            <Row>  
+              <Col lg={12} sm={24} xs={24}> <GaugeChart title="CPU" percent={ props.resourcesHisory.at(-1)!.cpu }/> </Col>
+              <Col lg={12} sm={24} xs={24}><GaugeChart title="MEM" percent={ props.resourcesHisory.at(-1)!.mem }/></Col>
+            </Row>}
         </Col>
         < Col span={14} className="utilization-plt instance-el">
           <Row justify='center'> CPU HYSTORIC PLOT </Row>
-          <LinePlot data={getCPUHistory(props)}/>
+          { ( props.resourcesHisory.length === 0 && <Spin tip='Waiting for data'/> ) || <LinePlot data={getCPUHistory(props)}/> }
         </Col>
       </Row>}
       { showMetrics && <Row justify="center" >
         < Col span={18} className="connections-box instance-el">
           <Row justify="center">CONNECTED PAGES</Row>
-          <Row justify="center" gutter={[16, 16]}>
-            {props.resourcesHisory.at(-1)!.connections.map((conn: ConnInfo) => <ConnectedCol key={conn.connUid + "_plot"} IP={conn.IP} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>)}
-          </Row>
+          { ( props.resourcesHisory.length === 0 && 
+            <Spin tip='Waiting for data'/> ) ||
+            <Row justify="center" gutter={[16, 16]}>
+            { props.resourcesHisory.at(-1)!.connections.map((conn: ConnInfo) => <ConnectedCol key={ conn.connUid + "_plot" } IP={conn.IP} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>) }
+            </Row>
+          }
         </Col>
       </Row>}
     </div>
