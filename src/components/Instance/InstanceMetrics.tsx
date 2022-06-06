@@ -1,90 +1,79 @@
 import { FC, useState } from 'react';
 
-import { ConnInfo, Resources } from "../../models/Resources";
-import LinePlot, { PlotData } from "../Chart/LinePlot";
+import { Resources } from "../../models/Resources";
 import GaugeChart from "../Chart/GaugeChart";
-import ConnectedCol from "./ConnectedCol";
+import InstanceMetricsModal from './InstanceMetricsModal';
 
 import {Row, Col} from 'antd/lib/grid';
-import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
+import { ArrowsAltOutlined } from '@ant-design/icons';
 import { Button, Spin } from 'antd';
 
 import './InstanceMetrics.css';
+import Modal from 'antd/lib/modal/Modal';
+
 
 export interface InstaceMetricsContent {
   instanceUID: string;
   instMetricsHost?: string;
-  resourcesHisory: Resources[];
+  resourcesHistory: Resources[];
   studentName: string;
   studentId: string;
 }
 
 const InstanceMetrics: FC<InstaceMetricsContent> = props => {
-  const [showMetrics, setShowMetrics] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const hideMetrics = () => {
-    setShowMetrics((oldVal) => !oldVal);
-  }
-
-  const getCPUHistory = (props: InstaceMetricsContent) => {
-    const historyLen = props.resourcesHisory.length;
-    const history: PlotData[] = [];
-    let i = 0;
-    if( historyLen < 10 ) {
-      for( ; i < 10-historyLen; i++ ) {
-        history.push({type:'CPU', value: undefined, timestamp: i});
-      }
-    }
-    props.resourcesHisory.forEach( (res: Resources) => { 
-      const cpu = res.cpu > 100 ? 100 : res.cpu;
-      history.push({type:'CPU', value: cpu, timestamp: i++});
-    } );
-    return history;
+  const handleCancel = () => {
+    setIsModalVisible(false);
   };
 
-  const getLatencyHistory = (props: InstaceMetricsContent, connUid: string) => {
-    const history: PlotData[] = props.resourcesHisory.map( (res: Resources, index: number) => { 
-      const lat = res.connections.find(conn => conn.connUid === connUid)?.latency;
-      return {type:'Latency', value: lat, timestamp: index}
-    } );
-    return history;
-  }
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
 
   return (
     <div className='instance-box'>
       <Row justify="center">
-        < Col span={18} className="title instance-el">
-          {`${props.studentName.toUpperCase()} ${props.studentId.toLowerCase()} `}
-          <Button type="text" onClick={hideMetrics} icon={ (showMetrics && <CaretDownOutlined />) || <CaretUpOutlined />} />
-          <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" style={{position: "absolute", right: "10px", bottom:"0px", fontSize: "0.8em", fontWeight: "lighter"}}>Go to instance</a> 
+        < Col lg={18} sm={24} xs={24} className="title instance-el">
+          <Row style={{height:'45px'}}>
+            <Col lg={8} sm={24} xs={24}>
+              <Row justify="start">
+                <span className='title-text'>{`${props.studentName.toUpperCase()} ${props.studentId.toLowerCase()} `}</span>
+              </Row>
+            </Col>
+            <Col lg={13} sm={24} xs={24}>
+              <Row justify="start">
+                <Col lg={6} sm={24} xs={24} style={{height:'30px', width:'60px'}}> 
+                  { (props.resourcesHistory.length === 0 && <Spin/>) ||  
+                    <GaugeChart height='30px' width='60px' titleOffsetY={-20} titleFontSize='0.9em' title="CPU" percent={ props.resourcesHistory.at(-1)!.cpu }/> }
+                </Col>
+                <Col lg={6} sm={24} xs={24}> 
+                  { (props.resourcesHistory.length === 0 && <Spin/>) || 
+                    <GaugeChart height='30px' width='60px' titleOffsetY={-20} titleFontSize='0.9em' title="MEM" percent={ props.resourcesHistory.at(-1)!.mem }/> }
+                </Col>
+                <Col lg={12} sm={24} xs={24}> 
+                  <Row justify='center' style={{fontSize: "1em", fontWeight: "normal", fontFamily:"Courier New", color: '#4B535E'}}># Active Connections(Total)</Row>
+                  { (props.resourcesHistory.length === 0 && <Spin/>) || 
+                    <Row justify='center' style={{fontSize: "1em", fontWeight: "normal", fontFamily:"Courier New"}}>{ props.resourcesHistory.at(-1)!.connections?.length || 0 }({ props.resourcesHistory.at(-1)?.connectionsCount })</Row> }
+                </Col>
+              </Row>
+            </Col>
+            <Col lg={3} sm={24} xs={24}>
+              <Button size='small' onClick={showModal} icon={<ArrowsAltOutlined />} style={{backgroundColor:'transparent'}} > Expand </Button>
+              <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" style={{position: "absolute", right: "15px", bottom:"0px", fontSize: "0.8em", fontWeight: "lighter"}}>Go to instance</a> 
+            </Col>
+          </Row>
         </Col>
       </Row>
-      {showMetrics && <Row justify="center">
-        < Col span={4} className="utilization-box instance-el">
-          SYSTEM LOAD
-          { ( props.resourcesHisory.length === 0 && 
-            <Spin tip='Waiting for data'/> ) ||
-            <Row>  
-              <Col lg={12} sm={24} xs={24}> <GaugeChart title="CPU" percent={ props.resourcesHisory.at(-1)!.cpu }/> </Col>
-              <Col lg={12} sm={24} xs={24}><GaugeChart title="MEM" percent={ props.resourcesHisory.at(-1)!.mem }/></Col>
-            </Row>}
-        </Col>
-        < Col span={14} className="utilization-plt instance-el">
-          <Row justify='center'> CPU HYSTORIC PLOT </Row>
-          { ( props.resourcesHisory.length === 0 && <Spin tip='Waiting for data'/> ) || <LinePlot data={getCPUHistory(props)}/> }
-        </Col>
-      </Row>}
-      { showMetrics && <Row justify="center" >
-        < Col span={18} className="connections-box instance-el">
-          <Row justify="center">CONNECTED PAGES</Row>
-          { ( props.resourcesHisory.length === 0 && 
-            <Spin tip='Waiting for data'/> ) ||
-            <Row justify="center" gutter={[16, 16]}>
-            { props.resourcesHisory.at(-1)!.connections.map((conn: ConnInfo) => <ConnectedCol key={ conn.connUid + "_plot" } IP={conn.IP} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>) }
-            </Row>
-          }
-        </Col>
-      </Row>}
+      <Modal 
+          visible={isModalVisible} 
+          closable={false} 
+          bodyStyle={{padding:'0'}}
+          footer={[
+            <Button key="close" onClick={handleCancel}> Close </Button>
+          ]}>
+        <InstanceMetricsModal resourcesHistory={props.resourcesHistory}/>
+      </Modal>
     </div>
   )
 }

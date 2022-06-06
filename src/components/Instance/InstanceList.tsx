@@ -13,14 +13,14 @@ const InstanceList = () => {
 
     newInstanceMap = newInstanceMap.set("inst-asdasdas", { 
       instanceUID: "inst-asdasdas",
-      resourcesHisory: [],
+      resourcesHistory: [],
       studentName: "Guido Ricioppo",
       studentId: "s279127",
     } as InstaceMetricsContent);
 
     newInstanceMap = newInstanceMap.set("inst-asdda2s", { 
       instanceUID: "inst-asdda2s",
-      resourcesHisory: [],
+      resourcesHistory: [],
       studentName: "Petre Ricioppo",
       studentId: "s283341",
       instMetricsHost: "192.168.122.251:6080"
@@ -85,8 +85,8 @@ const InstanceList = () => {
 
           setInstanceMap( (oldIM) => {
             const newIM = new Map(oldIM);
-            newIM.get("inst-asdda2s")!.resourcesHisory.push(JSON.parse(e.data.toString()));
-            if( newIM.get("inst-asdda2s")!.resourcesHisory.length > 10 )  newIM.get("inst-asdda2s")!.resourcesHisory.shift();
+            newIM.get("inst-asdda2s")!.resourcesHistory.push(JSON.parse(e.data.toString()));
+            if( newIM.get("inst-asdda2s")!.resourcesHistory.length > 10 )  newIM.get("inst-asdda2s")!.resourcesHistory.shift();
             return newIM;
           })
           setFakeMapIndex((oldIndex) => oldIndex+1);
@@ -103,9 +103,9 @@ const InstanceList = () => {
       let fr1 = getFakeResources(fakeMapIndex%30);
       // let fr2 = getFakeResources(29- fakeMapIndex%30);
       console.log(fr1);
-      newInstanceMap.get("inst-asdasdas")!.resourcesHisory.push(JSON.parse(fr1));
-      if(newInstanceMap.get("inst-asdasdas")!.resourcesHisory.length > 10) {
-        newInstanceMap.get("inst-asdasdas")!.resourcesHisory.shift();
+      newInstanceMap.get("inst-asdasdas")!.resourcesHistory.push(JSON.parse(fr1));
+      if(newInstanceMap.get("inst-asdasdas")!.resourcesHistory.length > 10) {
+        newInstanceMap.get("inst-asdasdas")!.resourcesHistory.shift();
       };
 
       // newInstanceMap.get("inst-asdda2s")!.resourcesHisory.push(JSON.parse(fr2));

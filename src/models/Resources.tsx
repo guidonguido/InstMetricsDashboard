@@ -1,5 +1,6 @@
 export interface Resources {
   connections: ConnInfo[];
+  connectionsCount: number;
   cpu: number;
   mem: number;
   timestamp: Date;

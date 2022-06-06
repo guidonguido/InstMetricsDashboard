@@ -4,7 +4,9 @@
 
 .instance-el {
   border: 2px solid #718fb2;
-  padding: 5px;
+  padding: 4px;
+  padding-bottom: 8px;
+  padding-right: 0px;
 }
 
 .title.instance-el {
@@ -12,17 +14,6 @@
   font-weight: bold;
 }
 
-.utilization-plt.instance-el {
-  border-top: 0px;
-}
-
-.utilization-box.instance-el {
-  border-right: 0px;
-  border-top: 0px;
-}
-
-.connections-box.instance-el {
-  border-top: 0px;
-  padding: 5px;
-  padding:0
+.title.instance-el .title-text{
+  padding-top: 10px;
 }
