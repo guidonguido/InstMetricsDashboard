@@ -14,9 +14,8 @@ export interface LinePlotContent {
 
 const LinePlot: FC<LinePlotContent> = (props) => {
   let config = {
-    style:{transition:"none"},
     renderer: "svg" as const,
-    height:150,
+    height: 150,
     autoFit: true,
     data: props.data,
     xField: 'timestamp',

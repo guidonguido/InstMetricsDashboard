@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import LinePlot, { PlotData } from "../Chart/LinePlot";
-import Col from "antd/lib/col";
+import { Col, Row } from "antd/lib";
 
 export interface ConnectedColContet {
   IP: string,
@@ -31,14 +31,16 @@ const ConnectedCol: FC<ConnectedColContet> = (props) => {
   }, [props.IP]);
 
   return (
-    <Col span={24} >
-      <Col span={5} className="modal-content">
-        <span> IP: {props.IP} FROM: {IPCity},{IPCountry}  Latency: {props.latency}ms </span>
+    <Row justify="start" style={{width:'100%'}} className="body-row">
+      <Col span={7} className="modal-content conn-text">
+        <Row justify="start"> IP: <span>{props.IP}</span> </Row>
+        <Row justify="start"> From: <span>{IPCity},{IPCountry}</span> </Row>
+        <Row justify="start"> Latency: <span>{props.latency}ms</span> </Row>
       </Col>
-      <Col span={19} className="modal-content">
+      <Col span={17} className="modal-content">
         <LinePlot data={props.data}/>
       </Col>  
-    </Col>
+    </Row>
   )
 }
 

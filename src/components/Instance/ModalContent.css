@@ -11,3 +11,10 @@
   padding-left: 8px;
   padding-right: 5px;
 }
+
+.body-row .conn-text {
+  font-size: "1em";
+  font-weight: "normal";
+  font-family:"Courier New";
+  color: '#4B535E';
+}
