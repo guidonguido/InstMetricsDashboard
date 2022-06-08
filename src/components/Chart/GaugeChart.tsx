@@ -13,7 +13,7 @@ export interface GaugeChartContent {
 const GaugeChart: FC<GaugeChartContent> = props => {
   const config = {
     style:{height:"60px", width:"90px"},
-    percent: props.percent / 100 || 0.0,
+    percent: (props.percent / 100) + 0.01 || 0.0,
     range: {
       color: 'l(1) 0:#B8E1FF 1:#3D76DD'
     },
@@ -42,8 +42,8 @@ const GaugeChart: FC<GaugeChartContent> = props => {
     },
   };
 
-  props.percent && (config.statistic.title.formatter = () => `${props.percent > 100 ? 100 : props.percent}%`);
   props.percent > 99 && ( config.statistic.title.style.fontSize = "0.9em" );
+  props.percent && (config.statistic.title.formatter = () => `${props.percent > 100 ? 100 : props.percent}%`);
   props.title && (config.statistic.content.formatter = () => props.title);
   props.height && (config.style.height = props.height);
   props.width && (config.style.width = props.width);

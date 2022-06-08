@@ -79,8 +79,10 @@ const InstanceMetrics: FC<InstaceMetricsContent> = props => {
   }
 
   const getNETWarningStatus = (resourcesHistory: Resources[]) => {
+    if (resourcesHistory.at(-1)!.connections === null) return 'grn';
+    
     const getAvgNET: () => number[] | undefined = () => {
-      return resourcesHistory.at(-1)!.connections!.map((conn: ConnInfo) => {
+      return resourcesHistory.at(-1)!.connections.map((conn: ConnInfo) => {
         const wantedRes = resourcesHistory.filter((e) => e.connections?.find(c => c.connUid === conn.connUid)!== undefined)
         return wantedRes.map((e) => e.connections?.find(c => c.connUid === conn.connUid)!.latency)
                         .reduce((a, b) => a + b, 0) / wantedRes.length;

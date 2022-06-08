@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getFakeResources } from "../../API/fakeResources";
 import InstanceMetrics, { InstaceMetricsContent } from "./InstanceMetrics"
+import Search from 'antd/lib/input/Search';
 
 const InstanceList = () => {
   // Map<instanceUID, InstanceMetricsContent>
   const [instanceMap, setInstanceMap] = useState<Map<string, InstaceMetricsContent>>(new Map<string, InstaceMetricsContent>());
+  const [searchInput, setSearchInput] = useState("");
   const [fakeMapIndex, setFakeMapIndex] = useState(0);
   const [isStateInitialized, setIsStateInitialized] = useState(false);
 
@@ -118,9 +120,24 @@ const InstanceList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fakeMapIndex, isStateInitialized]);
 
+  const getFilteredInstanceMap = () => {
+    return new Map(
+      Array.from(instanceMap).filter( ([_, value]) => {
+        return value.studentName.toLowerCase().includes(searchInput.toLowerCase()) ||
+        value.studentId.toLowerCase().includes(searchInput.toLowerCase()) 
+      })
+    )
+  }
+
+  const onSearch = (value: string) => {
+    setSearchInput(value);
+  }
+
   return (
     <>
-      {Array.from(instanceMap.values()).map((imc: InstaceMetricsContent) => < InstanceMetrics key={imc.instanceUID} {...imc} />)}
+      <Search placeholder="Search student name or student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
+      { searchInput === "" &&  Array.from(instanceMap.values()).map((imc: InstaceMetricsContent) => < InstanceMetrics key={imc.instanceUID} {...imc} />)}
+      { searchInput !== "" &&  Array.from(getFilteredInstanceMap().values()).map((imc: InstaceMetricsContent) => < InstanceMetrics key={imc.instanceUID} {...imc} />)}
     </>
   );
 }
