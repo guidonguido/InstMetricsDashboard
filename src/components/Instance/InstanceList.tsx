@@ -1,7 +1,25 @@
 import { useState, useEffect } from 'react';
 import { getFakeResources } from "../../API/fakeResources";
-import InstanceMetrics, { InstaceMetricsContent } from "./InstanceMetrics"
+import { InstaceMetricsContent } from "./InstanceMetrics"
 import Search from 'antd/lib/input/Search';
+import { Resources } from '../../models/Resources';
+import WarningStatus from './WarningStatus';
+import CPUStatus from './CPUStatus';
+import MEMStatus from './MEMStatus';
+import Table from 'antd/lib/table/Table';
+
+interface DataType {
+  key: string;
+  studentName: string;
+  instanceStatus: Resources[];
+  CPU: Resources[],
+  MEM: Resources[],
+  poliWiredCount: number | undefined,
+  poliWirelessCount: number | undefined,
+  outsideCount: number | undefined,
+  closedCount?: number | undefined,
+  actions: string | undefined
+}
 
 const InstanceList = () => {
   // Map<instanceUID, InstanceMetricsContent>
@@ -9,6 +27,7 @@ const InstanceList = () => {
   const [searchInput, setSearchInput] = useState("");
   const [fakeMapIndex, setFakeMapIndex] = useState(0);
   const [isStateInitialized, setIsStateInitialized] = useState(false);
+  const [instanceData, setInstanceData] = useState<DataType[]>([]);
 
   useEffect(() => {
     let newInstanceMap = new Map(instanceMap);
@@ -85,12 +104,19 @@ const InstanceList = () => {
         try {
           console.log(`WebSocket message: ${e.data.toString()}`);
 
-          setInstanceMap( (oldIM) => {
-            const newIM = new Map(oldIM);
-            newIM.get("inst-asdda2s")!.resourcesHistory.push(JSON.parse(e.data.toString()));
-            if( newIM.get("inst-asdda2s")!.resourcesHistory.length > 10 )  newIM.get("inst-asdda2s")!.resourcesHistory.shift();
-            return newIM;
-          })
+          let newIM = new Map(instanceMap);
+          newIM.get("inst-asdda2s")!.resourcesHistory.push(JSON.parse(e.data.toString()));
+          if( newIM.get("inst-asdda2s")!.resourcesHistory.length > 10 )  newIM.get("inst-asdda2s")!.resourcesHistory.shift();
+
+          setInstanceMap(newIM);
+          setInstanceData(mapInstanceData(newIM));
+
+          // setInstanceMap( (oldIM) => {
+          //   const newIM = new Map(oldIM);
+          //   newIM.get("inst-asdda2s")!.resourcesHistory.push(JSON.parse(e.data.toString()));
+          //   if( newIM.get("inst-asdda2s")!.resourcesHistory.length > 10 )  newIM.get("inst-asdda2s")!.resourcesHistory.shift();
+          //   return newIM;
+          // })
           setFakeMapIndex((oldIndex) => oldIndex+1);
         } catch (error) {
           console.log(`WebSocket onmessage error: ${error}`);
@@ -115,10 +141,30 @@ const InstanceList = () => {
       //   newInstanceMap.get("inst-asdda2s")!.resourcesHisory.shift();
       // };
       setInstanceMap(newInstanceMap);
+      setInstanceData(mapInstanceData(newInstanceMap));
     } 
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fakeMapIndex, isStateInitialized]);
+
+  const mapInstanceData = (instanceMetrics: Map<string, InstaceMetricsContent>): DataType[] =>  {
+    return Array.from(instanceMetrics).map( (instanceMetrics) => {
+      let data: DataType = {
+        key: instanceMetrics[0],
+        studentName: instanceMetrics[1].studentName,
+        instanceStatus: instanceMetrics[1].resourcesHistory,
+        CPU: instanceMetrics[1].resourcesHistory,
+        MEM: instanceMetrics[1].resourcesHistory,
+        poliWiredCount: instanceMetrics[1].resourcesHistory.at(-1)?.connections !== null? instanceMetrics[1].resourcesHistory.at(-1)?.connections.length : 0,
+        poliWirelessCount: instanceMetrics[1].resourcesHistory.at(-1)?.connections !== null? instanceMetrics[1].resourcesHistory.at(-1)?.connections.length : 0,
+        outsideCount: instanceMetrics[1].resourcesHistory.at(-1)?.connections !== null? instanceMetrics[1].resourcesHistory.at(-1)?.connections.length : 0,
+        //closedCount: instanceMetrics[1].resourcesHistory.at(-1)?.connections !== null? instanceMetrics[1].resourcesHistory.at(-1)?.connections.length : 0,
+        actions: instanceMetrics[1].instMetricsHost
+      } 
+      // data.closedCount = (instanceMetrics[1].resourcesHistory.at(-1)?.connectionsCount - (data.poliWiredCount + data.poliWirelessCount + data.outsideCount)) || 0;
+      return data;
+    })
+  }
 
   const getFilteredInstanceMap = () => {
     return new Map(
@@ -131,13 +177,59 @@ const InstanceList = () => {
 
   const onSearch = (value: string) => {
     setSearchInput(value);
+    if (value !== "") setInstanceData(mapInstanceData(getFilteredInstanceMap()));
   }
+
+  const tableColumns = [
+    {
+      title: "Student",
+      dataIndex: "studentName",
+      key: "studentName",
+    },
+    {
+      title: "Instance Status",
+      dataIndex: "instanceStatus",
+      key: "instanceStatus",
+      render: (rh: Resources[]) => <WarningStatus resourcesHistory={rh}/>
+    },
+    {
+      title: "CPU",
+      dataIndex: "CPU",
+      key: "CPU",
+      render: (rh: Resources[]) => <CPUStatus resourcesHistory={rh}/>
+    },
+    {
+      title: "MEM",
+      dataIndex: "MEM",
+      key: "MEM",
+      render: (rh: Resources[]) => <MEMStatus resourcesHistory={rh}/>
+    },
+    {
+      title: "PoliTO wired conn.",
+      dataIndex: "poliWiredCount",
+      key: "poliWiredCount",
+    },
+    {
+      title: "PoliTO wireless conn.",
+      dataIndex: "poliWirelessCount",
+      key: "poliWirelessCount",
+    },
+    {
+      title: "Outside connections",
+      dataIndex: "outsideCount",
+      key: "outsideCount",
+    },
+    {
+      title: "Actions",
+      dataIndex: "actions",
+      key: "actions",
+    },
+  ]
 
   return (
     <>
       <Search placeholder="Search student name or student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
-      { searchInput === "" &&  Array.from(instanceMap.values()).map((imc: InstaceMetricsContent) => < InstanceMetrics key={imc.instanceUID} {...imc} />)}
-      { searchInput !== "" &&  Array.from(getFilteredInstanceMap().values()).map((imc: InstaceMetricsContent) => < InstanceMetrics key={imc.instanceUID} {...imc} />)}
+      <Table columns={tableColumns} dataSource={instanceData} pagination={{ pageSize: 10 }}/>
     </>
   );
 }

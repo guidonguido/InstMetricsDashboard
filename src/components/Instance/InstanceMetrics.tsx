@@ -115,7 +115,7 @@ const InstanceMetrics: FC<InstaceMetricsContent> = props => {
               <Row justify="start">
                 <Col lg={4} sm={24} xs={24}>
                   { props.resourcesHistory.length > 0 && 
-                    <WarningStatus CPUWarningStatus={CPUWarningStatus} MEMWarningStatus={MEMWarningStatus} NETWarningStatus={NETWarningStatus}/>}
+                    <WarningStatus resourcesHistory={props.resourcesHistory}/>}
                 </Col>
                 <Col lg={4} sm={24} xs={24} style={{height:'30px', width:'60px'}}> 
                   { (props.resourcesHistory.length === 0 && <Spin/>) ||  
