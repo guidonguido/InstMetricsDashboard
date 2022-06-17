@@ -2,8 +2,9 @@ import { FC, useEffect, useState } from 'react';
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources } from "../../models/Resources";
+import { Resources, getAvgCPU } from "../../models/Resources";
 import Tooltip from 'antd/lib/tooltip';
+import Spin from 'antd/lib/spin';
 
 
 
@@ -26,17 +27,13 @@ const CPUStatus: FC<CPUStatusContent> = props => {
   }, [props.resourcesHistory.at(-1)]);
 
   const getCPUWarningStatus = (resourcesHistory: Resources[]) => {
-    if (resourcesHistory.length === 0) return 'grn'; 
-    const getAvgCPU: () => number = () => {
-      return resourcesHistory.map((e) => e.cpu).reduce((a, b) => a + b, 0) / resourcesHistory.length;
-    }
+    if (resourcesHistory.length === 0) return 'grn';
 
     let CPUWarningStatus;
-    
     if( resourcesHistory.at(-1)!.cpu < 90 ) {
       CPUWarningStatus = 'grn';
     } else {
-      const avgCPU = getAvgCPU();
+      const avgCPU = getAvgCPU(resourcesHistory);
       console.log("##### AVG CPU: ", avgCPU);
       CPUWarningStatus = ( (avgCPU > 98) && 'red' ) || ( (avgCPU > 95) && 'yel' ) || 'grn';
       console.log("##### CPUWarningStatus: ", CPUWarningStatus);
@@ -46,9 +43,9 @@ const CPUStatus: FC<CPUStatusContent> = props => {
   }
   
   const getWarningInfo = (CPUWarningStatus: string) => {
-    const grnMsg = "System is working correctly,";
-    let yelMsg = "System may be subject to high load, check";
-    let redMsg = "System is subject to high load, please check";
+    const grnMsg = "Instance is working correctly,";
+    let yelMsg = "Instance may be subject to high load, check";
+    let redMsg = "Instance is subject to high load, may want to check";
 
     const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
 
@@ -69,6 +66,7 @@ const CPUStatus: FC<CPUStatusContent> = props => {
   }
   
   return (
+    ( props.resourcesHistory.length === 0 && <Spin/> ) ||
     <Tooltip title={warningInfo?.warningMsg}>
       { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
       { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}

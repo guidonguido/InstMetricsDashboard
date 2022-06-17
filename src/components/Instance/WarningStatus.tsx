@@ -2,8 +2,9 @@ import { FC, useEffect, useState } from 'react';
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources, ConnInfo } from "../../models/Resources";
+import { Resources, getAvgCPU, getAvgMEM, getAvgNET } from "../../models/Resources";
 import Tooltip from 'antd/lib/tooltip';
+import Spin from 'antd/lib/spin';
 
 
 
@@ -29,16 +30,13 @@ const WarningStatus: FC<WarningStatusContent> = props => {
 
   const getCPUWarningStatus = (resourcesHistory: Resources[]) => {
     if (resourcesHistory.length === 0) return 'grn'; 
-    const getAvgCPU: () => number = () => {
-      return resourcesHistory.map((e) => e.cpu).reduce((a, b) => a + b, 0) / resourcesHistory.length;
-    }
 
     let CPUWarningStatus;
     
     if( resourcesHistory.at(-1)!.cpu < 90 ) {
       CPUWarningStatus = 'grn';
     } else {
-      const avgCPU = getAvgCPU();
+      const avgCPU = getAvgCPU(resourcesHistory);
       console.log("##### AVG CPU: ", avgCPU);
       CPUWarningStatus = ( (avgCPU > 98) && 'red' ) || ( (avgCPU > 95) && 'yel' ) || 'grn';
       console.log("##### CPUWarningStatus: ", CPUWarningStatus);
@@ -48,17 +46,14 @@ const WarningStatus: FC<WarningStatusContent> = props => {
   }
 
   const getMEMWarningStatus = (resourcesHistory: Resources[]) => {
-    if (resourcesHistory.length === 0) return 'grn'; 
-    const getAvgMEM: () => number = () => {
-      return resourcesHistory.map((e) => e.mem).reduce((a, b) => a + b, 0) / resourcesHistory.length;
-    }
+    if (resourcesHistory.length === 0) return 'grn';
 
     let MEMWarningStatus;
 
     if( resourcesHistory.at(-1)!.mem < 90 ) {
       MEMWarningStatus = 'grn';
     } else {
-      const avgMEM = getAvgMEM();
+      const avgMEM = getAvgMEM(resourcesHistory);
       MEMWarningStatus = ( (avgMEM > 98) && 'red' ) || ( (avgMEM > 95 ) && 'yel') || 'grn';
     }
     
@@ -68,29 +63,20 @@ const WarningStatus: FC<WarningStatusContent> = props => {
   const getNETWarningStatus = (resourcesHistory: Resources[]) => {
     if (resourcesHistory.length === 0 || resourcesHistory.at(-1)!.connections === null) return 'grn';
     
-    const getAvgNET: () => number[] | undefined = () => {
-      return resourcesHistory.at(-1)!.connections.map((conn: ConnInfo) => {
-        const wantedRes = resourcesHistory.filter((e) => e.connections?.find(c => c.connUid === conn.connUid)!== undefined)
-        return wantedRes.map((e) => e.connections?.find(c => c.connUid === conn.connUid)!.latency)
-                        .reduce((a, b) => a + b, 0) / wantedRes.length;
-      }) 
-    }
-
     let NETWarningStatus;
-    
     if( resourcesHistory.at(-1)!.connections.find(conn => conn.latency > 200) === undefined ) {
       NETWarningStatus = 'grn';
     } else {
-      const avgNET = getAvgNET();
+      const avgNET = getAvgNET(resourcesHistory);
       NETWarningStatus = ( (avgNET === undefined) && 'grn' ) || ( (avgNET!.filter(e => e > 800).length > 0) && 'red' ) || ( (avgNET!.filter(e => e > 200).length > 0) && 'yel' ) || 'grn';
     }
     return NETWarningStatus;
   }
   
   const getWarningInfo = (CPUWarningStatus: string, MEMWarningStatus: string, NETWarningStatus: string) => {
-    const grnMsg = "System is working correctly,";
-    let yelMsg = "System may be subject to high load, check";
-    let redMsg = "System is subject to high load, please check";
+    const grnMsg = "Instance is working correctly,";
+    let yelMsg = "Instance may be subject to high load, check";
+    let redMsg = "Instance is subject to high load, may want to check";
 
     const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
 
@@ -121,7 +107,7 @@ const WarningStatus: FC<WarningStatusContent> = props => {
       warningInfo.warningMsg = redMsg;
     }
     if (NETWarningStatus === 'red') {
-      redMsg += " Connection latencies,";
+      redMsg += " Connection quality,";
       warningInfo.warningGrade = "red";
       warningInfo.warningMsg = redMsg;
     }
@@ -131,6 +117,7 @@ const WarningStatus: FC<WarningStatusContent> = props => {
   }
   
   return (
+    ( props.resourcesHistory.length === 0 && <Spin/> ) ||
     <Tooltip title={warningInfo?.warningMsg}>
       { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
       { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}

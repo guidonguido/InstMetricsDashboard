@@ -21,17 +21,17 @@ const ConnMetrics: FC<ConnMetricsContent> = props => {
   };
 
   return (
-    <Row justify="center" className="body-row">
-        <Row justify="center">CONNECTED PAGES</Row>
+    <>
+        <Row justify="center"> CONNECTED PAGES </Row>
         { ( props.resourcesHistory.length === 0 && 
           <Spin tip='Waiting for data'/> ) ||
-          <Row justify="center" gutter={[16, 16]} className="modal-content">
+          <div className="modal-content">
           { props.resourcesHistory.at(-1)!.connections?.map((conn: ConnInfo) => 
-              <ConnectedCol key={ conn.connUid + "_plot" } IP={conn.IP} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>
+              <ConnectedCol key={ conn.connUid + "_plot" } IP={conn.ip} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>
             ) }
-          </Row>
+          </div>
         }
-    </Row>
+    </>
   )
 
 } 

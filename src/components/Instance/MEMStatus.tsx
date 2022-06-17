@@ -2,8 +2,9 @@ import { FC, useEffect, useState } from 'react';
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources } from "../../models/Resources";
+import { Resources, getAvgMEM } from "../../models/Resources";
 import Tooltip from 'antd/lib/tooltip';
+import Spin from 'antd/lib/spin';
 
 
 
@@ -26,17 +27,14 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   }, [props.resourcesHistory.at(-1)]);
 
   const getMEMWarningStatus = (resourcesHistory: Resources[]) => {
-    if (resourcesHistory.length === 0) return 'grn'; 
-    const getAvgMEM: () => number = () => {
-      return resourcesHistory.map((e) => e.mem).reduce((a, b) => a + b, 0) / resourcesHistory.length;
-    }
+    if (resourcesHistory.length === 0) return 'grn';
 
     let MEMWarningStatus;
 
     if( resourcesHistory.at(-1)!.mem < 90 ) {
       MEMWarningStatus = 'grn';
     } else {
-      const avgMEM = getAvgMEM();
+      const avgMEM = getAvgMEM(resourcesHistory);
       MEMWarningStatus = ( (avgMEM > 98) && 'red' ) || ( (avgMEM > 95 ) && 'yel') || 'grn';
     }
     
@@ -44,9 +42,9 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   }
   
   const getWarningInfo = (MEMWarningStatus: string) => {
-    const grnMsg = "System is working correctly,";
-    let yelMsg = "System may be subject to high load, check";
-    let redMsg = "System is subject to high load, please check";
+    const grnMsg = "Instance is working correctly,";
+    let yelMsg = "Instance may be subject to high load, check";
+    let redMsg = "Instance is subject to high load, may want to check";
 
     const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
     
@@ -66,6 +64,7 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   }
   
   return (
+    ( props.resourcesHistory.length === 0 && <Spin/> ) ||
     <Tooltip title={warningInfo?.warningMsg}>
       { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
       { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}

@@ -8,7 +8,8 @@ import Logo from '../Logo/Logo';
 import { Menu } from "antd";
 
 export interface InstanceMetricsModalContent {
-  resourcesHistory: Resources[];
+  instanceRefLink?: string,
+  resourcesHistory: Resources[]
 }  
 
 
@@ -25,7 +26,7 @@ const InstanceMetricsModal: FC<InstanceMetricsModalContent> = (props) => {
           Connections Info
         </Menu.Item>
         <Menu.Item key='go-link' icon={<Logo widthPx={20}/>}>
-          <a href="https://google.com" target="_blank" rel="noopener noreferrer">
+          <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
             Go to instance
           </a>
         </Menu.Item>

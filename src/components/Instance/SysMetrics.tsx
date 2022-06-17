@@ -32,14 +32,14 @@ const SysMetrics: FC<SysMetricsContent> = props => {
   return (
     <Row justify="center" className="body-row">
       < Col span={7} className="modal-content">
-        SYSTEM LOAD
+        <Row justify="center">SYSTEM LOAD</Row>
         { ( props.resourcesHistory!.length === 0 && 
           <Spin tip='Waiting for data'/> ) ||
           <div>
-            <Row className="gauge-chart">  
+            <Row className="gauge-chart" justify="center">  
               <GaugeChart title="CPU" percent={ props.resourcesHistory.at(-1)!.cpu }/>
             </Row>  
-            <Row className="gauge-chart">
+            <Row className="gauge-chart" justify="center">
               <GaugeChart title="MEM" percent={ props.resourcesHistory.at(-1)!.mem }/>
             </Row>
           </div>}
