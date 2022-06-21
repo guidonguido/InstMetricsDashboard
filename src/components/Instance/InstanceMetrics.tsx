@@ -13,7 +13,7 @@ import { Button, Spin } from 'antd';
 import './InstanceMetrics.css';
 
 
-export interface InstaceMetricsContent {
+export interface InstanceMetricsContent {
   instanceUID: string;
   instMetricsHost?: string;
   resourcesHistory: Resources[];
@@ -21,7 +21,7 @@ export interface InstaceMetricsContent {
   studentId: string;
 }
 
-const InstanceMetrics: FC<InstaceMetricsContent> = props => {
+const InstanceMetrics: FC<InstanceMetricsContent> = props => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [CPUWarningStatus, setCPUWarningStatus] = useState("");
   const [MEMWarningStatus, setMEMWarningStatus] = useState("");

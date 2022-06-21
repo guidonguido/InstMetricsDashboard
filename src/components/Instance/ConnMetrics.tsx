@@ -26,7 +26,7 @@ const ConnMetrics: FC<ConnMetricsContent> = props => {
         { ( props.resourcesHistory.length === 0 && 
           <Spin tip='Waiting for data'/> ) ||
           <div className="modal-content">
-          { props.resourcesHistory.at(-1)!.connections?.map((conn: ConnInfo) => 
+          { props.resourcesHistory.at(-1)!.connections?.sort((a, b) => a.connUid.localeCompare(b.connUid)).map((conn: ConnInfo) => 
               <ConnectedCol key={ conn.connUid + "_plot" } IP={conn.ip} latency={conn.latency} data={getLatencyHistory(props, conn.connUid)}></ConnectedCol>
             ) }
           </div>
