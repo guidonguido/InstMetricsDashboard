@@ -184,6 +184,7 @@ const InstanceList = () => {
       title: "Instance Status",
       dataIndex: "instanceStatus",
       key: "instanceStatus",
+      align: "center" as const,
       render: (rh: Resources[]) => <WarningStatus resourcesHistory={rh}/>,
       sorter: (a: DataType, b: DataType) => getAvgCPU(a.CPU) - getAvgCPU(b.CPU),
     },
@@ -191,6 +192,7 @@ const InstanceList = () => {
       title: "CPU",
       dataIndex: "CPU",
       key: "CPU",
+      align: "center" as const,
       render: (rh: Resources[]) => <CPUStatus resourcesHistory={rh}/>,
       sorter: (a: DataType, b: DataType) => getAvgCPU(a.CPU) - getAvgCPU(b.CPU),
     },
@@ -198,6 +200,7 @@ const InstanceList = () => {
       title: "MEM",
       dataIndex: "MEM",
       key: "MEM",
+      align: "center" as const,
       render: (rh: Resources[]) => <MEMStatus resourcesHistory={rh}/>,
       sorter: sortInstanceStatus
     },
@@ -208,21 +211,25 @@ const InstanceList = () => {
           title: "PoliTO wired",
           dataIndex: "poliWiredCount",
           key: "poliWiredCount",
+          align: "center" as const,
         },
         {
           title: "PoliTO wireless",
           dataIndex: "poliWirelessCount",
           key: "poliWirelessCount",
+          align: "center" as const,
         },
         {
           title: "Outsiders",
           dataIndex: "outsideCount",
           key: "outsideCount",
+          align: "center" as const,
         },
         {
           title: "Closed",
           dataIndex: "closedCount",
           key: "closedCount",
+          align: "center" as const,
         },
       ]
     },
@@ -230,20 +237,25 @@ const InstanceList = () => {
       title: "Actions",
       dataIndex: "actions",
       key: "actions",
+      align: "center" as const,
       render: (cnt: TableActionsContent) => <TableActions { ...cnt }  />
     },
   ]
 
   return (
     <>
+    { error.activeError && 
+      <Row justify='center' style={{paddingBottom:"30px"}}> 
+        <Alert message={error.errorMessage} type="error" closable={false} showIcon/> 
+      </Row> }
       <Row justify='center'>
-        < Col lg={23} sm={24} xs={24} className="title instance-el">
+        <Col lg={23} sm={24} xs={24} className="title instance-el">
           <Search placeholder="Search student name or student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
           <Table columns={tableColumns} dataSource={getFilteredInstanceData()} pagination={{ pageSize: 10 }} size="small"/>
         </Col>
       </Row>
-      { error.activeError && <Alert message={error.errorMessage} type="error" closable={false} showIcon /> }
     </>
+    
   );
 }
 

@@ -26,7 +26,7 @@ const TableActions: FC<TableActionsContent> = props => {
 
   return (
     <>
-      <Row align="middle">
+      <Row justify='center'>
         <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
               Go to instance
         </a>
@@ -34,7 +34,7 @@ const TableActions: FC<TableActionsContent> = props => {
 
       {props.resourcesHistory.length > 0 && (
         <>
-          <Row align="middle">
+          <Row justify='center'>
             <Button size='small' onClick={showModal} icon={<ArrowsAltOutlined />} style={{backgroundColor:'transparent'}} > Expand </Button>
           </Row>
 

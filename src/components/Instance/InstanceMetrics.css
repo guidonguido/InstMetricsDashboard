@@ -17,3 +17,7 @@
 .title.instance-el .title-text{
   padding-top: 10px;
 }
+
+.error-msg {
+  padding-bottom: 20px;
+}
