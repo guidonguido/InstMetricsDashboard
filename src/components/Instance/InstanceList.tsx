@@ -3,25 +3,26 @@ import { InstanceMetricsContent } from "./InstanceMetrics"
 import Search from 'antd/lib/input/Search';
 import { Resources, getAvgCPU, getAvgMEM, getAvgNET, ConnInfo } from '../../models/Resources';
 import { DashboardError } from '../../models/DashboardError';
-import WarningStatus from './WarningStatus';
+import InstanceStatus, { InstanceStatusContent } from '../Columns/InstanceStatus';
 import CPUStatus from './CPUStatus';
-import MEMStatus from './MEMStatus';
+import MEMStatus from '../Columns/MEMStatus';
+import NETStatus from '../Columns/NETStatus';
 import Table from 'antd/lib/table/Table';
-import TableActions, { TableActionsContent } from './TableActions';
+import TableActions, { TableActionsContent } from '../Columns/TableActions';
 import { Col, Row } from 'antd/lib/grid';
-import ipRangeCheck from 'ip-range-check';
 import { getInstances } from '../../API/ExamAgentAPI';
 import Alert from 'antd/lib/alert';
+import { getLabelFromIP } from '../../global/argument';
+import ActiveConnections from '../Columns/ActiveConnections';
 interface DataType {
   key: string;
   studentName: string;
-  instanceStatus: Resources[];
+  instanceStatus: InstanceStatusContent;
   CPU: Resources[],
   MEM: Resources[],
-  poliWiredCount: number | undefined,
-  poliWirelessCount: number | undefined,
-  outsideCount: number | undefined,
-  closedCount?: number | undefined,
+  NET: Resources[],
+  activeConn: ConnInfo[],
+  totalConn: number,
   actions: TableActionsContent
 }
 
@@ -45,7 +46,7 @@ const InstanceList = () => {
 
   useEffect( () => {
     instanceMap.forEach(instance => {
-      if (connectedInstances.indexOf(instance.instanceUID) === -1 ) {
+      if (connectedInstances.indexOf(instance.instanceUID) === -1 && instance.instMetricsHost !== "unknown" ) {
         const updatePeriod = 4; // seconds
         const url = `wss://${instance.instMetricsHost}usages?updatePeriod=${updatePeriod}`;
         console.log("Connecting to ws: ", url)
@@ -65,10 +66,9 @@ const InstanceList = () => {
         
         ws.onmessage = (e) => {
           try {
-            console.log(`WebSocket message: ${e.data.toString()}`);
             setInstanceMap( oldInstanceMap => {
               let newIM = new Map(oldInstanceMap);
-              newIM.get(instance.instanceUID)!.resourcesHistory.push(JSON.parse(e.data.toString()));
+              if( newIM.has(instance.instanceUID) ) newIM.get(instance.instanceUID)!.resourcesHistory.push(JSON.parse(e.data.toString()));
               if( newIM.get(instance.instanceUID)!.resourcesHistory.length > 10 )  newIM.get(instance.instanceUID)!.resourcesHistory.shift();
               
               setInstanceData(mapInstanceData(newIM));
@@ -106,7 +106,7 @@ const InstanceList = () => {
       })
     } catch (error) {
       console.log(`Error updating InstanceMap: ${error}`);
-      setError({ activeError: true, errorMessage: "Error fetching instance list" });
+      setError({ activeError: true, errorMessage: "Error fetching instance list, please reload the page or check your authorizations" });
       setInstanceMap(new Map<string, InstanceMetricsContent>());
     }    
   }
@@ -114,19 +114,17 @@ const InstanceList = () => {
   const mapInstanceData = (instanceMetrics: Map<string, InstanceMetricsContent>): DataType[] =>  {
     return Array.from(instanceMetrics).map( (instanceMetrics) => {
       const connections = instanceMetrics[1].resourcesHistory.at(-1)?.connections;
-      const connectionsCount = instanceMetrics[1].resourcesHistory.at(-1)?.connectionsCount || 0;
       let data: DataType = {
         key: instanceMetrics[0],
         studentName: `${instanceMetrics[1].studentName} ${instanceMetrics[1].studentId}`,
-        instanceStatus: instanceMetrics[1].resourcesHistory,
+        instanceStatus: {resourcesHistory: instanceMetrics[1].resourcesHistory, running: instanceMetrics[1].running, submitted: instanceMetrics[1].submitted},
         CPU: instanceMetrics[1].resourcesHistory,
         MEM: instanceMetrics[1].resourcesHistory,
-        poliWiredCount: connections != null? connections!.filter((c: ConnInfo) =>  ipRangeCheck(c.ip, "130.192.0.0/16")).length : 0,
-        poliWirelessCount: connections != null? connections!.filter((c: ConnInfo) =>  ipRangeCheck(c.ip, "130.192.0.0/16")).length : 0,
-        outsideCount: connections != null? connections!.filter((c: ConnInfo) =>  !ipRangeCheck(c.ip, "30.192.0.0/16")).length : 0,
-        closedCount: connections != null? (connectionsCount - connections!.length) : connectionsCount,
+        NET: instanceMetrics[1].resourcesHistory,
+        activeConn: connections != null? connections : [],
+        totalConn: instanceMetrics[1].resourcesHistory.at(-1)?.connectionsCount || 0,
         actions: {instanceRefLink: instanceMetrics[1].instMetricsHost, resourcesHistory: instanceMetrics[1].resourcesHistory}
-      } 
+       } 
       return data;
     })
   }
@@ -141,36 +139,45 @@ const InstanceList = () => {
   }
 
   const sortInstanceStatus = (a: DataType, b: DataType): number => {
-    const avgCPU_a = getAvgCPU(a.CPU)
-    const avgCPU_b = getAvgCPU(b.CPU)
-    const avgMEM_a = getAvgMEM(a.MEM)
-    const avgMEM_b = getAvgMEM(b.MEM)
-    const avgNET_a = getAvgNET(a.instanceStatus)
-    const avgNET_b = getAvgNET(b.instanceStatus)
+    const avgCPU_a = getAvgCPU(a.CPU);
+    const avgCPU_b = getAvgCPU(b.CPU);
+    const avgMEM_a = getAvgMEM(a.MEM);
+    const avgMEM_b = getAvgMEM(b.MEM);
 
-    let warning_a = 0
-    let warning_b = 0
+    let warning_a = 0;
+    let warning_b = 0;
 
-    if (avgCPU_a > 98) warning_a += 3
-    else if( avgCPU_a > 95 ) warning_a += 1
+    if (avgCPU_a > 98) warning_a += 3;
+    else if( avgCPU_a > 95 ) warning_a += 1;
 
-    if (avgCPU_b > 98) warning_b += 3
-    else if( avgCPU_b > 95 ) warning_b += 1
+    if (avgCPU_b > 98) warning_b += 3;
+    else if( avgCPU_b > 95 ) warning_b += 1;
 
-    if (avgMEM_a > 98) warning_a += 3
-    else if( avgMEM_a > 95 ) warning_a += 1
+    if (avgMEM_a > 98) warning_a += 3;
+    else if( avgMEM_a > 95 ) warning_a += 1;
 
-    if (avgMEM_b > 98) warning_b += 3
-    else if( avgMEM_b > 95 ) warning_b += 1
+    if (avgMEM_b > 98) warning_b += 3;
+    else if( avgMEM_b > 95 ) warning_b += 1;
 
-    if (avgNET_a !== undefined && (avgNET_a!.filter(e => e > 800).length > 0)) warning_a += 3
-    else if(avgNET_a !== undefined && (avgNET_a!.filter(e => e > 200).length > 0)) warning_a += 1
+    if( !a.instanceStatus.running ) warning_a += -1;
+    if( !b.instanceStatus.running ) warning_b += -1;
 
-    if (avgNET_b !== undefined && (avgNET_b!.filter(e => e > 800).length > 0)) warning_b += 3
-    else if(avgNET_b !== undefined && (avgNET_b!.filter(e => e > 200).length > 0)) warning_b += 1
+    return warning_a - warning_b;
+  }
 
-    return warning_a - warning_b
+  const sortNET = (a: DataType, b: DataType): number => {
+    let warning_a = 0;
+    let warning_b = 0;
+    const avgNET_a = getAvgNET(a.NET);
+    const avgNET_b = getAvgNET(b.NET);
+    
+    if ( Array.from(avgNET_a).filter(e => e[1] > 800).length > 0 ) warning_a += 2;
+    else if(Array.from(avgNET_a).filter(e => e[1] > getLabelFromIP(e[0]).latencyWarning).length > 0) warning_a += 1;
 
+    if ( Array.from(avgNET_b).filter(e => e[1] > 800).length > 0 ) warning_b += 2;
+    else if(Array.from(avgNET_b).filter(e => e[1] > getLabelFromIP(e[0]).latencyWarning).length > 0) warning_b += 1;
+    
+    return warning_a - warning_b;;
   }
 
   const tableColumns = [
@@ -185,8 +192,8 @@ const InstanceList = () => {
       dataIndex: "instanceStatus",
       key: "instanceStatus",
       align: "center" as const,
-      render: (rh: Resources[]) => <WarningStatus resourcesHistory={rh}/>,
-      sorter: (a: DataType, b: DataType) => getAvgCPU(a.CPU) - getAvgCPU(b.CPU),
+      render: (rh: InstanceStatusContent) => <InstanceStatus {...rh}/>,
+      sorter: sortInstanceStatus,
     },
     {
       title: "CPU",
@@ -202,34 +209,33 @@ const InstanceList = () => {
       key: "MEM",
       align: "center" as const,
       render: (rh: Resources[]) => <MEMStatus resourcesHistory={rh}/>,
-      sorter: sortInstanceStatus
+      sorter: (a: DataType, b: DataType) => getAvgMEM(a.MEM) - getAvgMEM(b.MEM),
+    },
+    {
+      title: "NET",
+      dataIndex: "NET",
+      key: "NET",
+      align: "center" as const,
+      render: (rh: Resources[]) => <NETStatus resourcesHistory={rh}/>,
+      sorter: sortNET
     },
     {
       title: 'Connections',
       children: [
         {
-          title: "PoliTO wired",
-          dataIndex: "poliWiredCount",
-          key: "poliWiredCount",
+          title: "Active",
+          dataIndex: "activeConn",
+          key: "activeConn",
           align: "center" as const,
+          render: (rh: ConnInfo[]) => <ActiveConnections connections={rh}/>,
+          sorter: (a: DataType, b: DataType) => a.activeConn.length - b.activeConn.length,
         },
         {
-          title: "PoliTO wireless",
-          dataIndex: "poliWirelessCount",
-          key: "poliWirelessCount",
+          title: "Total from Start",
+          dataIndex: "totalConn",
+          key: "totalConn",
           align: "center" as const,
-        },
-        {
-          title: "Outsiders",
-          dataIndex: "outsideCount",
-          key: "outsideCount",
-          align: "center" as const,
-        },
-        {
-          title: "Closed",
-          dataIndex: "closedCount",
-          key: "closedCount",
-          align: "center" as const,
+          sorter: (a: DataType, b: DataType) => a.totalConn - b.totalConn,
         },
       ]
     },
@@ -250,8 +256,8 @@ const InstanceList = () => {
       </Row> }
       <Row justify='center'>
         <Col lg={23} sm={24} xs={24} className="title instance-el">
-          <Search placeholder="Search student name or student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
-          <Table columns={tableColumns} dataSource={getFilteredInstanceData()} pagination={{ pageSize: 10 }} size="small"/>
+          <Search placeholder="Search for student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
+          <Table columns={tableColumns} dataSource={getFilteredInstanceData()} pagination={{ pageSize: 7 }} size="small"/>
         </Col>
       </Row>
     </>

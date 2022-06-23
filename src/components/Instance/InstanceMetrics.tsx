@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from 'react';
 import { Resources, ConnInfo } from "../../models/Resources";
 import GaugeChart from "../Chart/GaugeChart";
 import InstanceMetricsModal from './InstanceMetricsModal';
-import WarningStatus from './WarningStatus';
+import InstanceStatus from '../Columns/InstanceStatus';
 
 import { ArrowsAltOutlined } from '@ant-design/icons';
 import Modal from 'antd/lib/modal/Modal';
@@ -14,6 +14,8 @@ import './InstanceMetrics.css';
 
 
 export interface InstanceMetricsContent {
+  running: boolean,
+  submitted: boolean,
   instanceUID: string;
   instMetricsHost?: string;
   resourcesHistory: Resources[];
@@ -115,7 +117,7 @@ const InstanceMetrics: FC<InstanceMetricsContent> = props => {
               <Row justify="start">
                 <Col lg={4} sm={24} xs={24}>
                   { props.resourcesHistory.length > 0 && 
-                    <WarningStatus resourcesHistory={props.resourcesHistory}/>}
+                    <InstanceStatus running={true} submitted={false} resourcesHistory={props.resourcesHistory}/>}
                 </Col>
                 <Col lg={4} sm={24} xs={24} style={{height:'30px', width:'60px'}}> 
                   { (props.resourcesHistory.length === 0 && <Spin/>) ||  

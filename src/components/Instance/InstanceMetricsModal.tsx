@@ -1,11 +1,11 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 
-import { LineChartOutlined, ClusterOutlined } from "@ant-design/icons";
+import { LineChartOutlined } from "@ant-design/icons";
 import { Resources } from "../../models/Resources";
 import SysMetrics from './SysMetrics';
 import ConnMetrics from './ConnMetrics';
 import Logo from '../Logo/Logo';
-import { Menu } from "antd";
+import { Col, Menu, Row } from "antd";
 
 export interface InstanceMetricsModalContent {
   instanceRefLink?: string,
@@ -14,16 +14,11 @@ export interface InstanceMetricsModalContent {
 
 
 const InstanceMetricsModal: FC<InstanceMetricsModalContent> = (props) => {
-  const [activeMenu, setActiveMenu] = useState("sys");
-
   return (
     <>
       <Menu mode='horizontal' defaultSelectedKeys={['sysMetrics']}>
-        <Menu.Item key="sys" icon={<LineChartOutlined />} onClick={() => setActiveMenu("sys")}>
+        <Menu.Item key="sys" icon={<LineChartOutlined />}>
           System Metrics
-        </Menu.Item>
-        <Menu.Item key="con" icon={<ClusterOutlined />} onClick={() => setActiveMenu("con")}>
-          Connections Info
         </Menu.Item>
         <Menu.Item key='go-link' icon={<Logo widthPx={20}/>}>
           <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
@@ -31,8 +26,14 @@ const InstanceMetricsModal: FC<InstanceMetricsModalContent> = (props) => {
           </a>
         </Menu.Item>
       </Menu>
-      { activeMenu === 'sys' && <SysMetrics resourcesHistory={props.resourcesHistory}/> }
-      { activeMenu === 'con' && <ConnMetrics resourcesHistory={props.resourcesHistory}/> }
+      <Row>
+        <Col span={4}>
+          <SysMetrics resourcesHistory={props.resourcesHistory}/> 
+        </Col>
+        <Col span={18} offset={2}>
+          <ConnMetrics resourcesHistory={props.resourcesHistory}/> 
+        </Col>
+      </Row>
     </>
   )
 

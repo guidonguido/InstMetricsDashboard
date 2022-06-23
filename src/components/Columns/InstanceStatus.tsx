@@ -1,15 +1,17 @@
 import { FC, useEffect, useState } from 'react';
+import { ReactComponent as StopSvg} from  '../../assets/stop.svg'
+import { ReactComponent as SubmittedSvg} from  '../../assets/submitted.svg'
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources, getAvgCPU, getAvgMEM, getAvgNET } from "../../models/Resources";
+import { Resources, getAvgCPU, getAvgMEM } from "../../models/Resources";
 import Tooltip from 'antd/lib/tooltip';
-import Spin from 'antd/lib/spin';
 
 
-
-export interface WarningStatusContent {
+export interface InstanceStatusContent {
   resourcesHistory: Resources[],
+  running: boolean,
+  submitted: boolean
 }
 
 export interface WarningInfo {
@@ -17,14 +19,13 @@ export interface WarningInfo {
   warningMsg: string;
 }
 
-const WarningStatus: FC<WarningStatusContent> = props => {
+const InstanceStatus: FC<InstanceStatusContent> = props => {
   const [warningInfo, setWarningInfo] = useState<WarningInfo>()
 
   useEffect(() => {
     const CPUWarningStatus = getCPUWarningStatus(props.resourcesHistory);
     const MEMWarningStatus = getMEMWarningStatus(props.resourcesHistory);
-    const NETWarningStatus = getNETWarningStatus(props.resourcesHistory);
-    setWarningInfo(getWarningInfo(CPUWarningStatus, MEMWarningStatus, NETWarningStatus));
+    setWarningInfo(getWarningInfo(CPUWarningStatus, MEMWarningStatus));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.resourcesHistory.at(-1)]);
 
@@ -59,21 +60,8 @@ const WarningStatus: FC<WarningStatusContent> = props => {
     
     return MEMWarningStatus;
   }
-
-  const getNETWarningStatus = (resourcesHistory: Resources[]) => {
-    if (resourcesHistory.length === 0 || resourcesHistory.at(-1)!.connections === null) return 'grn';
-    
-    let NETWarningStatus;
-    if( resourcesHistory.at(-1)!.connections.find(conn => conn.latency > 200) === undefined ) {
-      NETWarningStatus = 'grn';
-    } else {
-      const avgNET = getAvgNET(resourcesHistory);
-      NETWarningStatus = ( (avgNET === undefined) && 'grn' ) || ( (avgNET!.filter(e => e > 800).length > 0) && 'red' ) || ( (avgNET!.filter(e => e > 200).length > 0) && 'yel' ) || 'grn';
-    }
-    return NETWarningStatus;
-  }
   
-  const getWarningInfo = (CPUWarningStatus: string, MEMWarningStatus: string, NETWarningStatus: string) => {
+  const getWarningInfo = (CPUWarningStatus: string, MEMWarningStatus: string) => {
     const grnMsg = "Instance is working correctly,";
     let yelMsg = "Instance may be subject to high load, check";
     let redMsg = "Instance is subject to high load, may want to check";
@@ -90,12 +78,6 @@ const WarningStatus: FC<WarningStatusContent> = props => {
       warningInfo.warningGrade = "yel";
       warningInfo.warningMsg = yelMsg;
     }
-    if (NETWarningStatus === 'yel') {
-      yelMsg += " Connection latencies,";
-      warningInfo.warningGrade = "yel";
-      warningInfo.warningMsg = yelMsg;
-    }
-
     if (CPUWarningStatus === 'red') {
       redMsg += " CPU usage,";
       warningInfo.warningGrade = "red";
@@ -106,24 +88,32 @@ const WarningStatus: FC<WarningStatusContent> = props => {
       warningInfo.warningGrade = "red";
       warningInfo.warningMsg = redMsg;
     }
-    if (NETWarningStatus === 'red') {
-      redMsg += " Connection quality,";
-      warningInfo.warningGrade = "red";
-      warningInfo.warningMsg = redMsg;
-    }
     warningInfo.warningMsg = warningInfo.warningMsg.slice(0, -1);
 
     return warningInfo;
   }
   
   return (
-    ( props.resourcesHistory.length === 0 && <Spin/> ) ||
-    <Tooltip title={warningInfo?.warningMsg}>
-      { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
-    </Tooltip>
+    <>
+      {!props.running && 
+        <Tooltip title="Instance Terminated">
+          <StopSvg width={'30px'} height={'48px'}/>
+        </Tooltip> }
+      
+      {props.resourcesHistory.length > 0 && 
+        <Tooltip title={warningInfo?.warningMsg}>
+          { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
+          { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
+          { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+        </Tooltip>
+      }
+      
+      { props.submitted && 
+        <Tooltip title="Report Submitted">
+          <SubmittedSvg width={'30px'} height={'48px'} style={{marginLeft:"20px"}}/>
+        </Tooltip>}
+    </>
   )
 }
 
-export default WarningStatus;
+export default InstanceStatus;

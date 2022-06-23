@@ -2,13 +2,11 @@ import { FC, useEffect, useState } from 'react';
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources, getAvgMEM } from "../../models/Resources";
+import { Resources, getAvgNET, ConnInfo } from "../../models/Resources";
+import { getLabelFromIP } from '../../global/argument';
 import Tooltip from 'antd/lib/tooltip';
-import Spin from 'antd/lib/spin';
 
-
-
-export interface MEMStatusContent {
+export interface NETStatusContent {
   resourcesHistory: Resources[],
 }
 
@@ -17,30 +15,41 @@ export interface WarningInfo {
   warningMsg: string;
 }
 
-const MEMStatus: FC<MEMStatusContent> = props => {
+const NETStatus: FC<NETStatusContent> = props => {
   const [warningInfo, setWarningInfo] = useState<WarningInfo>()
 
   useEffect(() => {
-    const MEMWarningStatus = getMEMWarningStatus(props.resourcesHistory);
-    setWarningInfo(getWarningInfo(MEMWarningStatus));
+    const NETWarningStatus = getNETWarningStatus(props.resourcesHistory);
+    setWarningInfo(getWarningInfo(NETWarningStatus));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.resourcesHistory.at(-1)]);
 
-  const getMEMWarningStatus = (resourcesHistory: Resources[]) => {
-    if (resourcesHistory.length === 0) return 'grn';
-
-    let MEMWarningStatus;
-
-    if( resourcesHistory.at(-1)!.mem < 90 ) {
-      MEMWarningStatus = 'grn';
-    } else {
-      const avgMEM = getAvgMEM(resourcesHistory);
-      MEMWarningStatus = ( (avgMEM > 98) && 'red' ) || ( (avgMEM > 95 ) && 'yel') || 'grn';
-    }
+  const getNETWarningStatus = (resourcesHistory: Resources[]) => {
+    if (resourcesHistory.length === 0 || resourcesHistory.at(-1)!.connections === null) return 'grn';
     
-    return MEMWarningStatus;
+    let NETWarningStatus;
+    if( resourcesHistory.at(-1)!.connections.find(conn => latencyIsWarning(conn)) === undefined ) {
+      NETWarningStatus = 'grn';
+    } else {
+      const avgNETMap = getAvgNET(resourcesHistory);
+      NETWarningStatus = 'grn'
+      for ( const el of Array.from(avgNETMap) ){
+        if( getLabelFromIP(el[0]).latencyWarning < el[1] ){
+          NETWarningStatus = 'yel';
+          break;
+        }
+      }
+
+      for ( const el of Array.from(avgNETMap) ){
+        if (el[1] > 800){
+          NETWarningStatus = 'red';
+          break;
+        }
+      }
+
+    }
+    return NETWarningStatus;
   }
-  
   const getWarningInfo = (MEMWarningStatus: string) => {
     const grnMsg = "Instance is working correctly,";
     let yelMsg = "Instance may be subject to high load, check";
@@ -49,12 +58,12 @@ const MEMStatus: FC<MEMStatusContent> = props => {
     const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
     
     if (MEMWarningStatus === 'yel') {
-      yelMsg += " Memory usage,";
+      yelMsg += " Connection Quality,";
       warningInfo.warningGrade = "yel";
       warningInfo.warningMsg = yelMsg;
     }
     if (MEMWarningStatus === 'red') {
-      redMsg += " Memory usage,";
+      redMsg += " Connection Quality,";
       warningInfo.warningGrade = "red";
       warningInfo.warningMsg = redMsg;
     }
@@ -62,9 +71,14 @@ const MEMStatus: FC<MEMStatusContent> = props => {
     warningInfo.warningMsg = warningInfo.warningMsg.slice(0, -1);
     return warningInfo;
   }
+
+  const latencyIsWarning = (connInfo: ConnInfo): boolean => {
+    const connLabel = getLabelFromIP(connInfo.ip);
+    return connInfo.latency > connLabel.latencyWarning
+  }
   
   return (
-    ( props.resourcesHistory.length === 0 && <Spin/> ) ||
+    ( props.resourcesHistory.length === 0 && <></> ) ||
     <Tooltip title={warningInfo?.warningMsg}>
       { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
       { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
@@ -73,4 +87,4 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   )
 }
 
-export default MEMStatus;
+export default NETStatus;

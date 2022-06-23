@@ -3,7 +3,7 @@ import { Button } from "antd";
 import Row from "antd/lib/row";
 import { Resources } from "../../models/Resources";
 import Modal from "antd/lib/modal/Modal";
-import InstanceMetricsModal from "./InstanceMetricsModal";
+import InstanceMetricsModal from "../Instance/InstanceMetricsModal";
 import { ArrowsAltOutlined } from '@ant-design/icons';
 
 
@@ -25,13 +25,13 @@ const TableActions: FC<TableActionsContent> = props => {
   };
 
   return (
-    <>
-      <Row justify='center'>
-        <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
-              Go to instance
-        </a>
-      </Row>
-
+    <>{ props.instanceRefLink !== "unknown" && 
+        <Row justify='center'>
+          <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
+                Go to instance
+          </a>
+        </Row>
+      }
       {props.resourcesHistory.length > 0 && (
         <>
           <Row justify='center'>

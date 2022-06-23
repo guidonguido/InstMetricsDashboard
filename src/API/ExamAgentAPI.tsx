@@ -28,14 +28,16 @@ const getInstances = async (): Promise<InstanceMetricsContent[]> => {
   const API_URL = "https://exercise.crownlabs.polito.it/api/instances/";
 
   return getInstanceAdapter(fetch(API_URL)).then( json => {
-    return json.filter( (e:InstanceAdapter) => e.running ).map( (e: InstanceAdapter) => { 
+    return json.map( (e: InstanceAdapter) => { 
       let labels = new Map(Object.entries(e.labels));
       return {
-      instanceUID: ( e.url != null && e.url.split('/').at(-3) ) || "unknown",
-      instMetricsHost: ( e.url != null && e.url.split('//')[1] ) || "unknown",
-      resourcesHistory: [],
-      studentName: "",
-      studentId: labels.get("crownlabs.qtype.moodle.org/matricola") || "unknown",
+        running: e.running,
+        submitted: labels.get("crownlabs.polito.it/instance-submission-completed") || false,
+        instanceUID: ( e.url != null && e.url.split('/').at(-3) ) || "unknown",
+        instMetricsHost: ( e.url != null && e.url.split('//')[1] ) || "unknown",
+        resourcesHistory: [],
+        studentName: "",
+        studentId: labels.get("crownlabs.qtype.moodle.org/matricola") || "none",
       } as InstanceMetricsContent })
   })
 }

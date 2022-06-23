@@ -17,12 +17,22 @@ export const getAvgMEM = (resourcesHistory: Resources[]): number =>{
   return resourcesHistory.map((e) => e.mem).reduce((a, b) => a + b, 0) / resourcesHistory.length;
 }
 
-export const getAvgNET = (resourcesHistory: Resources[]): number[] | undefined =>{
-  return resourcesHistory.at(-1)!.connections.map((conn: ConnInfo) => {
+// getAvgNET returns a map of <key:IP, val:avgNET>
+export const getAvgNET = (resourcesHistory: Resources[]): Map<string, number> =>{
+  let avgNETMap =  new Map<string, number>();
+  let connections = resourcesHistory.at(-1)!.connections;
+
+  connections != null && connections!.forEach((conn: ConnInfo) => {
+
     const wantedRes = resourcesHistory.filter((e) => e.connections?.find(c => c.connUid === conn.connUid)!== undefined)
-    return wantedRes.map((e) => e.connections?.find(c => c.connUid === conn.connUid)!.latency)
+
+    const avgLat = wantedRes.map((e) => e.connections?.find(c => c.connUid === conn.connUid)!.latency)
                     .reduce((a, b) => a + b, 0) / wantedRes.length;
+
+    avgNETMap = avgNETMap.set(conn.ip, avgLat)
   }) 
+
+  return avgNETMap;
 }
 
 export const getAvgCPU = (resourcesHistory: Resources[]): number =>{
