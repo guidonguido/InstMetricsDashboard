@@ -14,7 +14,8 @@ const ConnectedCol: FC<ConnectedColContet> = (props) => {
 
   useEffect(() => {
     const getGeoInfo = () => {
-      fetch(`https://ipapi.co/${props.IP}/json/`)
+      // fetch(`https://ipapi.co/${props.IP}/json/`)
+        fetch(`https://cldashboard.guidongui.it/api/ipapi/${props.IP}`)
         .then((response) => {
           let data = response.json();
           data.then(response => {

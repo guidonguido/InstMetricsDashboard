@@ -14,6 +14,7 @@ import './InstanceMetrics.css';
 
 
 export interface InstanceMetricsContent {
+  phase: string,
   running: boolean,
   submitted: boolean,
   instanceUID: string;
@@ -55,9 +56,7 @@ const InstanceMetrics: FC<InstanceMetricsContent> = props => {
       CPUWarningStatus = 'grn';
     } else {
       const avgCPU = getAvgCPU();
-      console.log("##### AVG CPU: ", avgCPU);
       CPUWarningStatus = ( (avgCPU > 98) && 'red' ) || ( (avgCPU > 95) && 'yel' ) || 'grn';
-      console.log("##### CPUWarningStatus: ", CPUWarningStatus);
     }
 
     return CPUWarningStatus;

@@ -52,8 +52,8 @@ const NETStatus: FC<NETStatusContent> = props => {
   }
   const getWarningInfo = (MEMWarningStatus: string) => {
     const grnMsg = "Instance is working correctly,";
-    let yelMsg = "Instance may be subject to high load, check";
-    let redMsg = "Instance is subject to high load, may want to check";
+    let yelMsg = "Instance experience quality may be degraded, may want to check";
+    let redMsg = "Instance experience quality is degraded due to ";
 
     const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
     

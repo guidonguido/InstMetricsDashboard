@@ -46,7 +46,7 @@ const InstanceList = () => {
 
   useEffect( () => {
     instanceMap.forEach(instance => {
-      if (connectedInstances.indexOf(instance.instanceUID) === -1 && instance.instMetricsHost !== "unknown" ) {
+      if (connectedInstances.indexOf(instance.instanceUID) === -1 && instance.phase === "Ready" && instance.instMetricsHost !== "unknown" ) {
         const updatePeriod = 4; // seconds
         const url = `wss://${instance.instMetricsHost}usages?updatePeriod=${updatePeriod}`;
         console.log("Connecting to ws: ", url)
@@ -91,6 +91,7 @@ const InstanceList = () => {
       setInstanceMap( oldInstanceMap => {
         let newInstanceMap = new Map(oldInstanceMap);
         instances.forEach(instance => {
+          if (newInstanceMap.get(instance.instanceUID)?.phase != instance.phase ) newInstanceMap = newInstanceMap.set(instance.instanceUID, instance)
           if (!newInstanceMap.has(instance.instanceUID)) newInstanceMap = newInstanceMap.set(instance.instanceUID, instance)
         });
 
@@ -105,7 +106,7 @@ const InstanceList = () => {
         return newInstanceMap;
       })
     } catch (error) {
-      console.log(`Error updating InstanceMap: ${error}`);
+      console.log(`Error updating InstanceMap: `, error);
       setError({ activeError: true, errorMessage: "Error fetching instance list, please reload the page or check your authorizations" });
       setInstanceMap(new Map<string, InstanceMetricsContent>());
     }    

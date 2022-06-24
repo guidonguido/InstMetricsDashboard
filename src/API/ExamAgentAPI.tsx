@@ -25,13 +25,15 @@ const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<an
 
 const getInstances = async (): Promise<InstanceMetricsContent[]> => {
 
-  const API_URL = "https://exercise.crownlabs.polito.it/api/instances/";
+  // const API_URL = "https://exercise.crownlabs.polito.it/api/instances/";
+  const API_URL = "https://cldashboard.guidongui.it/api/instances/";
 
   return getInstanceAdapter(fetch(API_URL)).then( json => {
     return json.map( (e: InstanceAdapter) => { 
       let labels = new Map(Object.entries(e.labels));
       return {
         running: e.running,
+        phase: ( e.phase != null && e.phase ) || "unknown",
         submitted: labels.get("crownlabs.polito.it/instance-submission-completed") || false,
         instanceUID: ( e.url != null && e.url.split('/').at(-3) ) || "unknown",
         instMetricsHost: ( e.url != null && e.url.split('//')[1] ) || "unknown",
