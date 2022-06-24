@@ -31,9 +31,7 @@ const CPUStatus: FC<CPUStatusContent> = props => {
       CPUWarningStatus = 'grn';
     } else {
       const avgCPU = getAvgCPU(resourcesHistory);
-      console.log("##### AVG CPU: ", avgCPU);
       CPUWarningStatus = ( (avgCPU > 98) && 'red' ) || ( (avgCPU > 95) && 'yel' ) || 'grn';
-      console.log("##### CPUWarningStatus: ", CPUWarningStatus);
     }
 
     return CPUWarningStatus;
