@@ -4,7 +4,7 @@ import Search from 'antd/lib/input/Search';
 import { Resources, getAvgCPU, getAvgMEM, getAvgNET, ConnInfo } from '../../models/Resources';
 import { DashboardError } from '../../models/DashboardError';
 import InstanceStatus, { InstanceStatusContent } from '../Columns/InstanceStatus';
-import CPUStatus from './CPUStatus';
+import CPUStatus from '../Columns/CPUStatus';
 import MEMStatus from '../Columns/MEMStatus';
 import NETStatus from '../Columns/NETStatus';
 import Table from 'antd/lib/table/Table';
