@@ -6,6 +6,7 @@ import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
 import { Resources, getAvgCPU, getAvgMEM } from "../../models/Resources";
 import Tooltip from 'antd/lib/tooltip';
+import { Spin } from 'antd';
 
 
 export interface InstanceStatusContent {
@@ -93,10 +94,12 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
   
   return (
     <>
-      {!props.running && 
+      {( !props.running && 
         <Tooltip title="Instance Terminated">
           <StopSvg width={'30px'} height={'48px'}/>
-        </Tooltip> }
+        </Tooltip> ) || (
+          props.resourcesHistory.length === 0 && <Tooltip title="Waiting for metrics"> <Spin/> </Tooltip>
+        )}
       
       {props.resourcesHistory.length > 0 && 
         <Tooltip title={warningInfo?.warningMsg}>

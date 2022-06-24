@@ -19,6 +19,7 @@ export const getAvgMEM = (resourcesHistory: Resources[]): number =>{
 
 // getAvgNET returns a map of <key:IP, val:avgNET>
 export const getAvgNET = (resourcesHistory: Resources[]): Map<string, number> =>{
+  if(resourcesHistory.length === 0) return new Map<string, number>();
   let avgNETMap =  new Map<string, number>();
   let connections = resourcesHistory.at(-1)!.connections;
 

@@ -66,10 +66,20 @@ const InstanceList = () => {
         
         ws.onmessage = (e) => {
           try {
+            if( instanceMap.get(instance.instanceUID)?.phase !== "Ready" ) {
+              ws.close();
+              console.log(`WebSocket connected closed due to ${instanceMap.get(instance.instanceUID)?.phase} instance: ${ws.url}`);
+              return;
+            }
             setInstanceMap( oldInstanceMap => {
+
               let newIM = new Map(oldInstanceMap);
-              if( newIM.has(instance.instanceUID) ) newIM.get(instance.instanceUID)!.resourcesHistory.push(JSON.parse(e.data.toString()));
-              if( newIM.get(instance.instanceUID)!.resourcesHistory.length > 10 )  newIM.get(instance.instanceUID)!.resourcesHistory.shift();
+              if( newIM.has(instance.instanceUID) ) {
+                newIM.get(instance.instanceUID)!.resourcesHistory.push(JSON.parse(e.data.toString()));
+                if( newIM.get(instance.instanceUID)!.resourcesHistory.length > 10 )  {
+                  newIM.get(instance.instanceUID)!.resourcesHistory.shift();
+                }
+              }
               
               setInstanceData(mapInstanceData(newIM));
               return newIM;
@@ -91,7 +101,7 @@ const InstanceList = () => {
       setInstanceMap( oldInstanceMap => {
         let newInstanceMap = new Map(oldInstanceMap);
         instances.forEach(instance => {
-          if (newInstanceMap.get(instance.instanceUID)?.phase != instance.phase ) newInstanceMap = newInstanceMap.set(instance.instanceUID, instance)
+          if (newInstanceMap.get(instance.instanceUID)?.phase !== instance.phase ) newInstanceMap = newInstanceMap.set(instance.instanceUID, instance)
           if (!newInstanceMap.has(instance.instanceUID)) newInstanceMap = newInstanceMap.set(instance.instanceUID, instance)
         });
 
@@ -258,7 +268,9 @@ const InstanceList = () => {
       <Row justify='center'>
         <Col lg={23} sm={24} xs={24} className="title instance-el">
           <Search placeholder="Search for student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
-          <Table columns={tableColumns} dataSource={getFilteredInstanceData()} pagination={{ pageSize: 7 }} size="small"/>
+          <Table pagination={{ pageSize: 10, showTotal: total => `Total ${total} instances`, showSizeChanger: false }} size="small"
+                 columns={tableColumns} 
+                 dataSource={getFilteredInstanceData()} />
         </Col>
       </Row>
     </>
