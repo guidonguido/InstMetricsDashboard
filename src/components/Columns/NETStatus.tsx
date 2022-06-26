@@ -53,9 +53,8 @@ const NETStatus: FC<NETStatusContent> = props => {
   }
 
   const getHighestLat = (connections: ConnInfo[]) => {
-    let highestLat = 0;
-    highestLat = Math.max(...connections.map(conn => conn.latency));
-    return highestLat; 
+    if( connections.length === 0) return 0;
+    return Math.max(...connections.map(conn => conn.latency));
   }
   
   // latencyIsWarning returns true if the latency is greater than the 
@@ -68,9 +67,9 @@ const NETStatus: FC<NETStatusContent> = props => {
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
     <Tooltip title={`Latency ${currentHighestLat}ms`}>
-      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { warningStatus === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'30px'}/>}
+      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'30px'}/>}
+      { warningStatus === 'red' && <RedSvg width={'30px'} height={'30px'}/>}
     </Tooltip>
   )
 }

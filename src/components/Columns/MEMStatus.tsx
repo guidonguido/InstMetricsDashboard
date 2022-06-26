@@ -34,9 +34,9 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
     <Tooltip title={`MEM ${currentMEM}%`}>
-      { wargingStatus === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { wargingStatus === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { wargingStatus === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+      { wargingStatus === 'grn' && <GrnSvg width={'30px'} height={'30px'}/>}
+      { wargingStatus === 'yel' && <YelSvg width={'30px'} height={'30px'}/>}
+      { wargingStatus === 'red' && <RedSvg width={'30px'} height={'30px'}/>}
     </Tooltip>
   )
 }

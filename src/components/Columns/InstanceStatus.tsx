@@ -103,9 +103,9 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
       
       {props.resourcesHistory.length > 0 && 
         <Tooltip title={warningInfo?.warningMsg}>
-          { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-          { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-          { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+          { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'30px'}/>}
+          { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'30px'}/>}
+          { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'30px'}/>}
         </Tooltip>
       }
       

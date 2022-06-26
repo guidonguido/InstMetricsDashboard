@@ -1,12 +1,13 @@
 import { FC, useState } from "react";
 import { Button } from "antd";
-import Row from "antd/lib/row";
-import { Resources } from "../../models/Resources";
+import {Row, Col} from "antd/es/grid";
+import Tooltip from "antd/es/tooltip";
 import Modal from "antd/lib/modal/Modal";
+import { Resources } from "../../models/Resources";
 import InstanceMetricsModal from "../Instance/InstanceMetricsModal";
-import { ArrowsAltOutlined } from '@ant-design/icons';
-
-
+import { ReactComponent as Link } from  '../../assets/link.svg';
+import { ReactComponent as View } from  '../../assets/spy.svg';
+import { ReactComponent as More } from  '../../assets/more.svg';
 
 export interface TableActionsContent {
   instanceRefLink?: string,
@@ -25,34 +26,51 @@ const TableActions: FC<TableActionsContent> = props => {
   };
 
   return (
-    <>{ props.instanceRefLink !== "unknown" && 
-        <Row justify='center'>
-          <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
-                Go to instance
-          </a>
-        </Row>
-      }
-      {props.resourcesHistory.length > 0 && (
+    <Row justify="space-evenly">
+      { props.resourcesHistory.length > 0 && 
         <>
-          <Row justify='center'>
-            <Button size='small' onClick={showModal} icon={<ArrowsAltOutlined />} style={{backgroundColor:'transparent'}} > Expand </Button>
-          </Row>
+          <Col>
+            <Tooltip title={"Get more system and connections info"}>
+              <More onClick={showModal} width={'30px'} height={'30px'} style={{cursor:"pointer"}}/>
+            </Tooltip>
+          </Col>
 
           <Modal 
-              visible={isModalVisible} 
-              closable={false} 
-              maskClosable={true}
-              keyboard={true}
-              bodyStyle={{padding:'0'}}
-              onCancel={handleCancel}
-              width={'800px'}
-              footer={[
-                <Button key="close" onClick={handleCancel}> Close </Button>
-              ]}>
+          visible={isModalVisible} 
+          closable={false} 
+          maskClosable={true}
+          keyboard={true}
+          bodyStyle={{padding:'0'}}
+          onCancel={handleCancel}
+          width={'800px'}
+          footer={[
+            <Button key="close" onClick={handleCancel}> Close </Button>
+          ]}>
             <InstanceMetricsModal resourcesHistory={props.resourcesHistory} instanceRefLink={props.instanceRefLink}/>
           </Modal>
-        </>)}
-    </>
+        </>
+      }
+
+      { props.instanceRefLink !== "unknown" && 
+        <>
+          <Col>
+            <Tooltip title={"Go to instance"}>
+              <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
+                <Link width={'30px'} height={'30px'}/>
+              </a>
+            </Tooltip>
+          </Col>
+          <Col>
+            <Tooltip title={"Go to instance in View Mode"}>
+              <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
+                    <View width={'30px'} height={'30px'}/>
+              </a>
+            </Tooltip>
+          </Col>
+        </>
+      }
+
+    </Row>
   )
 }
 

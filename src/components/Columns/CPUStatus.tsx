@@ -35,9 +35,9 @@ const CPUStatus: FC<CPUStatusContent> = props => {
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
     <Tooltip title={`CPU ${currentCPU}%`}>
-      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { warningStatus === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'30px'}/>}
+      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'30px'}/>}
+      { warningStatus === 'red' && <RedSvg width={'30px'} height={'30px'}/>}
     </Tooltip>
   )
 }

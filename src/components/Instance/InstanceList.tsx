@@ -14,6 +14,8 @@ import { getInstances } from '../../API/ExamAgentAPI';
 import Alert from 'antd/lib/alert';
 import { getLabelFromIP } from '../../global/argument';
 import ActiveConnections from '../Columns/ActiveConnections';
+import { SortOrder } from 'antd/lib/table/interface';
+import Popover from 'antd/lib/popover';
 interface DataType {
   key: string;
   studentName: string;
@@ -199,56 +201,61 @@ const InstanceList = () => {
       sorter: (a: DataType, b: DataType) => a.studentName.localeCompare(b.studentName),
     },
     {
-      title: "Instance Status",
+      title: <Popover title="Instance Health Status">Instance Status</Popover>,
       dataIndex: "instanceStatus",
       key: "instanceStatus",
       align: "center" as const,
       render: (rh: InstanceStatusContent) => <InstanceStatus {...rh}/>,
       sorter: sortInstanceStatus,
+      showSorterTooltip: false,
+      sortDirections: ["descend" as SortOrder]  
     },
     {
-      title: "CPU",
+      title: <Popover title="Instance CPU Utilization">CPU</Popover>,
       dataIndex: "CPU",
       key: "CPU",
       align: "center" as const,
       render: (rh: Resources[]) => <CPUStatus resourcesHistory={rh}/>,
       sorter: (a: DataType, b: DataType) => getAvgCPU(a.CPU) - getAvgCPU(b.CPU),
+      showSorterTooltip: false,
+      sortDirections: ["descend" as SortOrder]
     },
     {
-      title: "MEM",
+      title: <Popover title="Instance Memory Utilization">MEM</Popover>,
       dataIndex: "MEM",
       key: "MEM",
       align: "center" as const,
       render: (rh: Resources[]) => <MEMStatus resourcesHistory={rh}/>,
       sorter: (a: DataType, b: DataType) => getAvgMEM(a.MEM) - getAvgMEM(b.MEM),
+      showSorterTooltip: false,
+      sortDirections: ["descend" as SortOrder]
     },
     {
-      title: "NET",
+      title: <Popover title="Coonnections Latency Health">NET</Popover>,
       dataIndex: "NET",
       key: "NET",
       align: "center" as const,
       render: (rh: Resources[]) => <NETStatus resourcesHistory={rh}/>,
-      sorter: sortNET
+      sorter: sortNET,
+      showSorterTooltip: false,
+      sortDirections: ["descend" as SortOrder]
     },
     {
-      title: 'Connections',
-      children: [
-        {
-          title: "Active",
-          dataIndex: "activeConn",
-          key: "activeConn",
-          align: "center" as const,
-          render: (rh: ConnInfo[]) => <ActiveConnections connections={rh}/>,
-          sorter: (a: DataType, b: DataType) => a.activeConn.length - b.activeConn.length,
-        },
-        {
-          title: "Total from Start",
-          dataIndex: "totalConn",
-          key: "totalConn",
-          align: "center" as const,
-          sorter: (a: DataType, b: DataType) => a.totalConn - b.totalConn,
-        },
-      ]
+      title: <Popover title="Active Connections to Instance">Active Conn.</Popover>,
+      dataIndex: "activeConn",
+      key: "activeConn",
+      align: "center" as const,
+      render: (rh: ConnInfo[]) => <ActiveConnections connections={rh}/>,
+      sorter: (a: DataType, b: DataType) => a.activeConn.length - b.activeConn.length,
+      showSorterTooltip: false,
+    },
+    {
+      title: <Popover title="Hystorical Total Connections to Instance">Total Conn.</Popover>,
+      dataIndex: "totalConn",
+      key: "totalConn",
+      align: "center" as const,
+      sorter: (a: DataType, b: DataType) => a.totalConn - b.totalConn,
+      showSorterTooltip: false,
     },
     {
       title: "Actions",
