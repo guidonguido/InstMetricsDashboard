@@ -9,17 +9,13 @@ export interface CPUStatusContent {
   resourcesHistory: Resources[],
 }
 
-export interface WarningInfo {
-  warningGrade: string;
-  warningMsg: string;
-}
-
 const CPUStatus: FC<CPUStatusContent> = props => {
-  const [warningInfo, setWarningInfo] = useState<WarningInfo>()
+  const [currentCPU, setCurrentCPU] = useState(0);
+  const [warningStatus, setWarningStatus] = useState<string>("grn");
 
   useEffect(() => {
-    const CPUWarningStatus = getCPUWarningStatus(props.resourcesHistory);
-    setWarningInfo(getWarningInfo(CPUWarningStatus));
+    setWarningStatus(getCPUWarningStatus(props.resourcesHistory));
+    setCurrentCPU(props.resourcesHistory.at(-1)?.cpu || 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.resourcesHistory.at(-1)]);
 
@@ -33,39 +29,15 @@ const CPUStatus: FC<CPUStatusContent> = props => {
       const avgCPU = getAvgCPU(resourcesHistory);
       CPUWarningStatus = ( (avgCPU > 98) && 'red' ) || ( (avgCPU > 95) && 'yel' ) || 'grn';
     }
-
     return CPUWarningStatus;
-  }
-  
-  const getWarningInfo = (CPUWarningStatus: string) => {
-    const grnMsg = "Instance is working correctly,";
-    let yelMsg = "Instance may be subject to high load, check";
-    let redMsg = "Instance is subject to high load, may want to check";
-
-    const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
-
-    if (CPUWarningStatus === 'yel') {
-      yelMsg += " CPU usage,";
-      warningInfo.warningGrade = "yel";
-      warningInfo.warningMsg = yelMsg;
-    }
-
-    if (CPUWarningStatus === 'red') {
-      redMsg += " CPU usage,";
-      warningInfo.warningGrade = "red";
-      warningInfo.warningMsg = redMsg;
-    }
-    warningInfo.warningMsg = warningInfo.warningMsg.slice(0, -1);
-
-    return warningInfo;
   }
   
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
-    <Tooltip title={warningInfo?.warningMsg}>
-      { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+    <Tooltip title={`CPU ${currentCPU}%`}>
+      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
     </Tooltip>
   )
 }

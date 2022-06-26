@@ -16,11 +16,12 @@ export interface WarningInfo {
 }
 
 const NETStatus: FC<NETStatusContent> = props => {
-  const [warningInfo, setWarningInfo] = useState<WarningInfo>()
+  const [currentHighestLat, setCurrentHighestLat] = useState(0);
+  const [warningStatus, setWarningStatus] = useState<string>("grn");
 
   useEffect(() => {
-    const NETWarningStatus = getNETWarningStatus(props.resourcesHistory);
-    setWarningInfo(getWarningInfo(NETWarningStatus));
+    setWarningStatus(getNETWarningStatus(props.resourcesHistory));
+    setCurrentHighestLat(getHighestLat(props.resourcesHistory.at(-1)?.connections || []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.resourcesHistory.at(-1)]);
 
@@ -50,28 +51,15 @@ const NETStatus: FC<NETStatusContent> = props => {
     }
     return NETWarningStatus;
   }
-  const getWarningInfo = (MEMWarningStatus: string) => {
-    const grnMsg = "Instance is working correctly,";
-    let yelMsg = "Instance experience quality may be degraded, may want to check";
-    let redMsg = "Instance experience quality is degraded due to ";
 
-    const warningInfo: WarningInfo = {warningGrade: "grn", warningMsg: grnMsg};
-    
-    if (MEMWarningStatus === 'yel') {
-      yelMsg += " Connection Quality,";
-      warningInfo.warningGrade = "yel";
-      warningInfo.warningMsg = yelMsg;
-    }
-    if (MEMWarningStatus === 'red') {
-      redMsg += " Connection Quality,";
-      warningInfo.warningGrade = "red";
-      warningInfo.warningMsg = redMsg;
-    }
-
-    warningInfo.warningMsg = warningInfo.warningMsg.slice(0, -1);
-    return warningInfo;
+  const getHighestLat = (connections: ConnInfo[]) => {
+    let highestLat = 0;
+    highestLat = Math.max(...connections.map(conn => conn.latency));
+    return highestLat; 
   }
-
+  
+  // latencyIsWarning returns true if the latency is greater than the 
+  // warning level set in the corrisponging global label
   const latencyIsWarning = (connInfo: ConnInfo): boolean => {
     const connLabel = getLabelFromIP(connInfo.ip);
     return connInfo.latency > connLabel.latencyWarning
@@ -79,10 +67,10 @@ const NETStatus: FC<NETStatusContent> = props => {
   
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
-    <Tooltip title={warningInfo?.warningMsg}>
-      { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
-      { warningInfo?.warningGrade === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
+    <Tooltip title={`Latency ${currentHighestLat}ms`}>
+      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'48px'}/>}
+      { warningStatus === 'red' && <RedSvg width={'30px'} height={'48px'}/>}
     </Tooltip>
   )
 }
