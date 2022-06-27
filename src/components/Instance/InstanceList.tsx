@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
+import { getLabelFromIP } from '../../global/argument';
 import { InstanceMetricsContent } from "./InstanceMetrics"
+import { getInstances } from '../../API/ExamAgentAPI';
+import { Col, Row, Table, Popover, Alert } from 'antd';
+import { SortOrder } from 'antd/lib/table/interface';
 import Search from 'antd/lib/input/Search';
 import { Resources, getAvgCPU, getAvgMEM, getAvgNET, ConnInfo } from '../../models/Resources';
+import { InstanceStatusPopoverCont, CPUPopoverCont, 
+  MEMPopoverCont, NETPopoverCont, ActiveConnPopoverCont, TotalConnPopoverCont } from '../../models/PopoverContent';
 import { DashboardError } from '../../models/DashboardError';
 import InstanceStatus, { InstanceStatusContent } from '../Columns/InstanceStatus';
+import TableActions, { TableActionsContent } from '../Columns/TableActions';
+import ActiveConnections from '../Columns/ActiveConnections';
 import CPUStatus from '../Columns/CPUStatus';
 import MEMStatus from '../Columns/MEMStatus';
 import NETStatus from '../Columns/NETStatus';
-import Table from 'antd/lib/table/Table';
-import TableActions, { TableActionsContent } from '../Columns/TableActions';
-import { Col, Row } from 'antd/lib/grid';
-import { getInstances } from '../../API/ExamAgentAPI';
-import Alert from 'antd/lib/alert';
-import { getLabelFromIP } from '../../global/argument';
-import ActiveConnections from '../Columns/ActiveConnections';
-import { SortOrder } from 'antd/lib/table/interface';
-import Popover from 'antd/lib/popover';
+
 interface DataType {
   key: string;
   studentName: string;
@@ -92,14 +92,13 @@ const InstanceList = () => {
         }
       }
     })
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceMap])
 
   const updateInstanceMap = async () => {
     try {
       const instances: InstanceMetricsContent[] = await getInstances();
-
+      setError({ activeError: false, errorMessage: "" });
       setInstanceMap( oldInstanceMap => {
         let newInstanceMap = new Map(oldInstanceMap);
         instances.forEach(instance => {
@@ -201,7 +200,7 @@ const InstanceList = () => {
       sorter: (a: DataType, b: DataType) => a.studentName.localeCompare(b.studentName),
     },
     {
-      title: <Popover title="Instance Health Status">Instance Status</Popover>,
+      title: <Popover content={InstanceStatusPopoverCont} title="Instance Health Status">Instance Status</Popover>,
       dataIndex: "instanceStatus",
       key: "instanceStatus",
       align: "center" as const,
@@ -211,7 +210,7 @@ const InstanceList = () => {
       sortDirections: ["descend" as SortOrder]  
     },
     {
-      title: <Popover title="Instance CPU Utilization">CPU</Popover>,
+      title: <Popover content={CPUPopoverCont} title="Instance CPU Warning Level">CPU</Popover>,
       dataIndex: "CPU",
       key: "CPU",
       align: "center" as const,
@@ -221,7 +220,7 @@ const InstanceList = () => {
       sortDirections: ["descend" as SortOrder]
     },
     {
-      title: <Popover title="Instance Memory Utilization">MEM</Popover>,
+      title: <Popover content={MEMPopoverCont} title="Instance Memory Warning Level">MEM</Popover>,
       dataIndex: "MEM",
       key: "MEM",
       align: "center" as const,
@@ -231,7 +230,7 @@ const InstanceList = () => {
       sortDirections: ["descend" as SortOrder]
     },
     {
-      title: <Popover title="Coonnections Latency Health">NET</Popover>,
+      title: <Popover content={NETPopoverCont} title="Coonnections Health">NET</Popover>,
       dataIndex: "NET",
       key: "NET",
       align: "center" as const,
@@ -241,7 +240,7 @@ const InstanceList = () => {
       sortDirections: ["descend" as SortOrder]
     },
     {
-      title: <Popover title="Active Connections to Instance">Active Conn.</Popover>,
+      title: <Popover content={ActiveConnPopoverCont} title="Active Connections to the Instance">Active Conn.</Popover>,
       dataIndex: "activeConn",
       key: "activeConn",
       align: "center" as const,
@@ -250,7 +249,7 @@ const InstanceList = () => {
       showSorterTooltip: false,
     },
     {
-      title: <Popover title="Hystorical Total Connections to Instance">Total Conn.</Popover>,
+      title: <Popover content={TotalConnPopoverCont} title="Total Connections to the Instance">Total Conn.</Popover>,
       dataIndex: "totalConn",
       key: "totalConn",
       align: "center" as const,

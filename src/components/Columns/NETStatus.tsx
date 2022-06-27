@@ -67,9 +67,9 @@ const NETStatus: FC<NETStatusContent> = props => {
   return (
     ( props.resourcesHistory.length === 0 && <></> ) ||
     <Tooltip title={`Latency ${currentHighestLat}ms`}>
-      { warningStatus === 'grn' && <GrnSvg width={'30px'} height={'30px'}/>}
-      { warningStatus === 'yel' && <YelSvg width={'30px'} height={'30px'}/>}
-      { warningStatus === 'red' && <RedSvg width={'30px'} height={'30px'}/>}
+      { warningStatus === 'grn' && <GrnSvg width={'25px'} height={'25px'}/>}
+      { warningStatus === 'yel' && <YelSvg width={'25px'} height={'25px'}/>}
+      { warningStatus === 'red' && <RedSvg width={'25px'} height={'25px'}/>}
     </Tooltip>
   )
 }

@@ -12,20 +12,25 @@ export interface InstanceMetricsModalContent {
   resourcesHistory: Resources[]
 }  
 
-
 const InstanceMetricsModal: FC<InstanceMetricsModalContent> = (props) => {
+  const menuItems = [
+    {
+      key: "sys",
+      icon: <LineChartOutlined />,
+      label: "System metrics",
+    },
+    {
+      key: "go-link",
+      icon: <Logo widthPx={20}/>,
+      label: <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
+              Go to instance
+            </a>
+    }
+  ]
+
   return (
     <>
-      <Menu mode='horizontal' defaultSelectedKeys={['sysMetrics']}>
-        <Menu.Item key="sys" icon={<LineChartOutlined />}>
-          System Metrics
-        </Menu.Item>
-        <Menu.Item key='go-link' icon={<Logo widthPx={20}/>}>
-          <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
-            Go to instance
-          </a>
-        </Menu.Item>
-      </Menu>
+      <Menu mode='horizontal' items={menuItems} defaultSelectedKeys={['sysMetrics']}/>
       <Row>
         <Col span={4}>
           <SysMetrics resourcesHistory={props.resourcesHistory}/> 

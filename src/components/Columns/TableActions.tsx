@@ -31,7 +31,7 @@ const TableActions: FC<TableActionsContent> = props => {
         <>
           <Col>
             <Tooltip title={"Get more system and connections info"}>
-              <More onClick={showModal} width={'30px'} height={'30px'} style={{cursor:"pointer"}}/>
+              <More onClick={showModal} width={'25px'} height={'25px'} style={{cursor:"pointer"}}/>
             </Tooltip>
           </Col>
 
@@ -56,14 +56,14 @@ const TableActions: FC<TableActionsContent> = props => {
           <Col>
             <Tooltip title={"Go to instance"}>
               <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
-                <Link width={'30px'} height={'30px'}/>
+                <Link width={'25px'} height={'25px'}/>
               </a>
             </Tooltip>
           </Col>
           <Col>
             <Tooltip title={"Go to instance in View Mode"}>
               <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
-                    <View width={'30px'} height={'30px'}/>
+                    <View width={'25px'} height={'25px'}/>
               </a>
             </Tooltip>
           </Col>
