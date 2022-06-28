@@ -96,7 +96,7 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
     <>
       {( !props.running && 
         <Tooltip title="Instance Terminated">
-          <StopSvg width={'30px'} height={'48px'}/>
+          <StopSvg width={'25px'} height={'25px'}/>
         </Tooltip> ) || (
           props.resourcesHistory.length === 0 && <Tooltip title="Waiting for metrics"> <Spin/> </Tooltip>
         )}
@@ -111,7 +111,7 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
       
       { props.submitted && 
         <Tooltip title="Report Submitted">
-          <SubmittedSvg width={'30px'} height={'48px'} style={{marginLeft:"20px"}}/>
+          <SubmittedSvg width={'25px'} height={'25px'} style={{marginLeft:"20px"}}/>
         </Tooltip>}
     </>
   )

@@ -62,7 +62,7 @@ const TableActions: FC<TableActionsContent> = props => {
           </Col>
           <Col>
             <Tooltip title={"Go to instance in View Mode"}>
-              <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
+              <a href={`https://${props.instanceRefLink}#readonly,noresize`} target="_blank" rel="noopener noreferrer">
                     <View width={'25px'} height={'25px'}/>
               </a>
             </Tooltip>

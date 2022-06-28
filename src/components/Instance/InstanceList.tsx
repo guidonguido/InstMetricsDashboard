@@ -12,6 +12,7 @@ import { DashboardError } from '../../models/DashboardError';
 import InstanceStatus, { InstanceStatusContent } from '../Columns/InstanceStatus';
 import TableActions, { TableActionsContent } from '../Columns/TableActions';
 import ActiveConnections from '../Columns/ActiveConnections';
+import TotalConnections from '../Columns/TotalConnections';
 import CPUStatus from '../Columns/CPUStatus';
 import MEMStatus from '../Columns/MEMStatus';
 import NETStatus from '../Columns/NETStatus';
@@ -24,7 +25,7 @@ interface DataType {
   MEM: Resources[],
   NET: Resources[],
   activeConn: ConnInfo[],
-  totalConn: number,
+  totalConn: ConnInfo[],
   actions: TableActionsContent
 }
 
@@ -74,7 +75,6 @@ const InstanceList = () => {
               return;
             }
             setInstanceMap( oldInstanceMap => {
-
               let newIM = new Map(oldInstanceMap);
               if( newIM.has(instance.instanceUID) ) {
                 newIM.get(instance.instanceUID)!.resourcesHistory.push(JSON.parse(e.data.toString()));
@@ -82,7 +82,6 @@ const InstanceList = () => {
                   newIM.get(instance.instanceUID)!.resourcesHistory.shift();
                 }
               }
-              
               setInstanceData(mapInstanceData(newIM));
               return newIM;
             })
@@ -133,8 +132,8 @@ const InstanceList = () => {
         CPU: instanceMetrics[1].resourcesHistory,
         MEM: instanceMetrics[1].resourcesHistory,
         NET: instanceMetrics[1].resourcesHistory,
-        activeConn: connections != null? connections : [],
-        totalConn: instanceMetrics[1].resourcesHistory.at(-1)?.connectionsCount || 0,
+        activeConn: connections != null? connections.filter((conn: ConnInfo) => conn.active) : [],
+        totalConn: connections != null? connections : [],
         actions: {instanceRefLink: instanceMetrics[1].instMetricsHost, resourcesHistory: instanceMetrics[1].resourcesHistory}
        } 
       return data;
@@ -244,7 +243,7 @@ const InstanceList = () => {
       dataIndex: "activeConn",
       key: "activeConn",
       align: "center" as const,
-      render: (rh: ConnInfo[]) => <ActiveConnections connections={rh}/>,
+      render: (ci: ConnInfo[]) => <ActiveConnections connections={ci}/>,
       sorter: (a: DataType, b: DataType) => a.activeConn.length - b.activeConn.length,
       showSorterTooltip: false,
     },
@@ -253,7 +252,8 @@ const InstanceList = () => {
       dataIndex: "totalConn",
       key: "totalConn",
       align: "center" as const,
-      sorter: (a: DataType, b: DataType) => a.totalConn - b.totalConn,
+      render: (ci: ConnInfo[]) => <TotalConnections connections={ci}/>,
+      sorter: (a: DataType, b: DataType) => a.totalConn.length - b.totalConn.length,
       showSorterTooltip: false,
     },
     {

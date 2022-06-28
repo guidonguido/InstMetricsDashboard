@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from 'react';
-import { Col, Row } from "antd/lib";
+import { ConnInfo } from '../../models/Resources';
+import { Col, Row, Tag } from "antd/lib";
 import "./ModalContent.css";
 
 export interface ConnectedColContet {
-  IP: string,
-  latency: number,
+  connInfo: ConnInfo;
 }
 
 const ConnectedCol: FC<ConnectedColContet> = (props) => {
@@ -14,8 +14,8 @@ const ConnectedCol: FC<ConnectedColContet> = (props) => {
 
   useEffect(() => {
     const getGeoInfo = () => {
-      // fetch(`https://ipapi.co/${props.IP}/json/`)
-        fetch(`https://cldashboard.guidongui.it/api/ipapi/${props.IP}`)
+      fetch(`https://ipapi.co/${props.connInfo.ip}/json/`)
+        // fetch(`https://cldashboard.guidongui.it/api/ipapi/${props.IP}`)
         .then((response) => {
           let data = response.json();
           data.then(response => {
@@ -29,14 +29,17 @@ const ConnectedCol: FC<ConnectedColContet> = (props) => {
         });
     };
 
-    if (props.IP && props.IP !== '') getGeoInfo();
-  }, [props.IP]);
+    if (props.connInfo.ip && props.connInfo.ip !== '') getGeoInfo();
+  }, [props.connInfo.ip]);
 
   return (
     <Col span={7} className="modal-content conn-text body-row">
-      <Row justify="start"> IP: <span> {props.IP}</span> </Row>
+      <Row justify="start"> State: {( props.connInfo.active && <Tag color='green'>Connected</Tag> ) || <Tag color='red'>Disconnected</Tag> } </Row>
+      <Row justify="start"> IP: <span> {props.connInfo.ip}</span> </Row>
       <Row justify="start"> From: <span> {IPCity}{IPCountry}</span> </Row>
-      <Row justify="start"> Latency: <span> {props.latency}ms</span> </Row>
+      {props.connInfo.active && <Row justify="start"> Latency: <span> {props.connInfo.latency} ms</span> </Row>}
+      <Row justify="start"> Connection Time: <span> {new Date(props.connInfo.connTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'})}</span> </Row>
+      {!props.connInfo.active && <Row justify="start"> Disconnection Time: <span> {new Date(props.connInfo.disconnTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'})}</span> </Row>}
       <Row justify="start"> Provider: <span> {IPprovider}</span> </Row>
     </Col>
   )

@@ -11,6 +11,9 @@ export interface ConnInfo {
   latency: number;
   ip: string;
   connUid: string;
+  connTime: Date;
+  disconnTime: Date;
+  active: boolean;
 }
 
 export const getAvgMEM = (resourcesHistory: Resources[]): number =>{
