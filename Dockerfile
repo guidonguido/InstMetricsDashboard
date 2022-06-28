@@ -1,0 +1,47 @@
+# Builder image for the frontend
+FROM node:16-alpine as builder
+
+## Switch to an unprivileged user (avoids problems with npm)
+USER node
+
+## Set the working directory and copy the source code
+RUN mkdir --parent /tmp/frontend
+WORKDIR /tmp/frontend
+
+COPY --chown=node:node ./package*.json /tmp/frontend/
+RUN npm install
+
+ARG BUILD_TARGET
+ARG SUBROUTE="/dashboard"
+
+ENV PUBLIC_URL=${SUBROUTE}
+
+COPY --chown=node:node src /tmp/frontend/src
+COPY --chown=node:node public /tmp/frontend/public
+COPY --chown=node:node tsconfig.json /tmp/frontend/
+RUN npm run build
+
+# Final image to export the service
+FROM nginx:1.19
+
+ARG SUBROUTE="/dashboard"
+ARG API_ENDPOINT="https://exam.crownlabs.polito.it/api/"
+ENV SUBROUTE=${SUBROUTE}
+ENV API_ENDPOINT=${API_ENDPOINT}
+
+## Copy the different files
+COPY --chown=nginx:nginx --from=builder /tmp/frontend/build /usr/share/nginx/html${SUBROUTE}
+COPY --chown=nginx:nginx nginx.conf.tmpl /etc/nginx/conf.d/default.conf.tmpl
+
+RUN envsubst '$SUBROUTE,$API_ENDPOINT' < /etc/nginx/conf.d/default.conf.tmpl > /etc/nginx/conf.d/default.conf && \
+    rm /etc/nginx/conf.d/default.conf.tmpl
+
+## Add permissions for the nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && \
+    chown -R nginx:nginx /var/run/nginx.pid
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

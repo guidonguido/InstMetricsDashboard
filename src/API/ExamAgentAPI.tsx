@@ -24,9 +24,8 @@ const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<an
 }
 
 const getInstances = async (): Promise<InstanceMetricsContent[]> => {
-
-  // const API_URL = "https://exercise.crownlabs.polito.it/api/instances/";
-  let API_URL = "https://cldashboard.guidongui.it/api/instances/";
+  // let API_URL = "https://cldashboard.guidongui.it/api/instances/";
+  let API_URL = `${process.env.PUBLIC_URL}/api/instances/`;
   if(window.codIns !== "" && window.quizID !== "") 
     API_URL += `?crownlabs.qtype.moodle.org/quizid=${window.quizID}&crownlabs.qtype.moodle.org/codins=${window.codIns}`;
 
