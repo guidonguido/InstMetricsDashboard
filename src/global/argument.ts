@@ -9,11 +9,13 @@ export interface ConnLabel {
 declare global {
   interface Window {
       connLabels: ConnLabel[],
-      quizID: string
+      quizID: string,
+      codIns: string,
   }
 }
 
 window.quizID = "";
+window.codIns = "";
 
 // <key:label; val:subnet>
 window.connLabels = [
