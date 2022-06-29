@@ -26,7 +26,7 @@ const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<an
 const getInstances = async (): Promise<InstanceMetricsContent[]> => {
   // let API_URL = "https://cldashboard.guidongui.it/api/instances/";
   let API_URL = `${process.env.PUBLIC_URL}/api/instances/`;
-  if(window.codIns !== "" && window.quizID !== "") 
+  if(window.codIns !== null && window.quizID !== null) 
     API_URL += `?crownlabs.qtype.moodle.org/quizid=${window.quizID}&crownlabs.qtype.moodle.org/codins=${window.codIns}`;
 
   return getInstanceAdapter(fetch(API_URL)).then( json => {

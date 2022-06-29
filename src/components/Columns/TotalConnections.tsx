@@ -13,12 +13,18 @@ interface ConnectedInfo {
   key:string,
   ip: string,
   label: string,
+  connNum: number,
   connTime: string,
-  disconnTime: string
+  disconnTime: string,
 }
 
 const TotalConnections: FC<TotalConnectionsContent> = props => {
   const columns: ColumnsType<ConnectedInfo> = [
+    {
+      title: 'Conn. number',
+      dataIndex: 'connNum',
+      align: "center" as const,
+    },
     {
       title: 'Label',
       dataIndex: 'label',
@@ -46,16 +52,18 @@ const TotalConnections: FC<TotalConnectionsContent> = props => {
   ];
 
   const getDataSource = (connections: ConnInfo[]) => {
-    return connections.map( conn => { return {
-      key:conn.connUid, 
-      label:getLabelFromIP(conn.ip).label, 
+    return connections.map( (conn, index) => { return {
       ip: conn.ip, 
+      key:conn.connUid, 
+      connNum: index + 1,
+      label:getLabelFromIP(conn.ip).label, 
       connTime: new Date(conn.connTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'}),
       disconnTime: (conn.active && '-')|| new Date(conn.disconnTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'})} } )
   }
 
   const content = (
-      <Table columns={columns} dataSource={getDataSource(props.connections)} size="small" pagination={{ position: [] }} />
+      <Table columns={columns} size="small" pagination={{ position: [] }} 
+        dataSource={getDataSource(props.connections.sort((a,b) => b.connTime.getTime() - a.connTime.getTime()))}/>
   );
 
   return (

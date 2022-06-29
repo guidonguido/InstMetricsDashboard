@@ -128,7 +128,7 @@ const InstanceList = () => {
       let data: DataType = {
         key: instanceMetrics[0],
         studentName: `${instanceMetrics[1].studentName} ${instanceMetrics[1].studentId}`,
-        instanceStatus: {resourcesHistory: instanceMetrics[1].resourcesHistory, running: instanceMetrics[1].running, submitted: instanceMetrics[1].submitted},
+        instanceStatus: {resourcesHistory: instanceMetrics[1].resourcesHistory, running: instanceMetrics[1].running, phase: instanceMetrics[1].phase, submitted: instanceMetrics[1].submitted},
         CPU: instanceMetrics[1].resourcesHistory,
         MEM: instanceMetrics[1].resourcesHistory,
         NET: instanceMetrics[1].resourcesHistory,

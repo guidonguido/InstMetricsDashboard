@@ -5,13 +5,14 @@ import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
 import { Resources, getAvgCPU, getAvgMEM } from "../../models/Resources";
-import Tooltip from 'antd/lib/tooltip';
-import { Spin } from 'antd';
+import { SyncOutlined } from '@ant-design/icons';
+import { Spin, Tag, Tooltip } from 'antd';
 
 
 export interface InstanceStatusContent {
   resourcesHistory: Resources[],
   running: boolean,
+  phase: string,
   submitted: boolean
 }
 
@@ -98,6 +99,8 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
         <Tooltip title="Instance Terminated">
           <StopSvg width={'25px'} height={'25px'}/>
         </Tooltip> ) || (
+          props.phase === "Starting" && <Tag icon={<SyncOutlined spin />} color="processing"> processing</Tag>
+        ) || (
           props.resourcesHistory.length === 0 && <Tooltip title="Waiting for metrics"> <Spin/> </Tooltip>
         )}
       

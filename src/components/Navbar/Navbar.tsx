@@ -5,7 +5,7 @@ const Navbar = () => {
   return (
     <>
       <Header className="menuBar">
-        <Logo widthPx={55} className="logo" />
+        <Logo widthPx={55} color="#cae2ff" className="logo" />
         <div className="pageTitle"> CrownLabs Exams Dashboard </div> 
       </Header>
     </>
