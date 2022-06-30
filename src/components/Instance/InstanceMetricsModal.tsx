@@ -35,8 +35,8 @@ const InstanceMetricsModal: FC<InstanceMetricsModalContent> = (props) => {
         <Col span={4}>
           <SysMetrics resourcesHistory={props.resourcesHistory}/> 
         </Col>
-        <Col span={18} offset={2}>
-          <ConnMetrics resourcesHistory={props.resourcesHistory}/> 
+        <Col span={20} offset={0}>
+          <ConnMetrics connections={props.resourcesHistory.at(-1)?.connections || []}/> 
         </Col>
       </Row>
     </>

@@ -12,7 +12,8 @@ export interface ActiveConnectionsContent {
 interface ConnectedInfo {
   key: string;
   ip: string,
-  label: string
+  label: string,
+  latency: string,
 }
 
 const ActiveConnections: FC<ActiveConnectionsContent> = props => {
@@ -29,10 +30,15 @@ const ActiveConnections: FC<ActiveConnectionsContent> = props => {
       align: "center" as const,
       render: (ip: string) => <Tag color="orange">{ip}</Tag>,
     },
+    {
+      title: 'Latency',
+      dataIndex: 'latency',
+      align: "center" as const,
+    },
   ];
 
   const getDataSource = (connections: ConnInfo[]) => {
-    return connections.map( conn => { return {key:conn.connUid, label:getLabelFromIP(conn.ip).label, ip: conn.ip} } )
+    return connections.map( conn => { return {key:conn.connUid, label:getLabelFromIP(conn.ip).label, ip: conn.ip, latency: `${conn.latency}ms`} } )
   }
 
   const content = (

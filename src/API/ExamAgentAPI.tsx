@@ -1,5 +1,5 @@
 import { InstanceAdapter } from "../models/InstanceAdapter";
-import { InstanceMetricsContent } from "../components/Instance/InstanceMetrics";
+import { InstanceMetricsContent } from "../components/Instance/InstanceList";
 
 const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<any> => {
   return new Promise((resolve, reject) => {
@@ -36,11 +36,11 @@ const getInstances = async (): Promise<InstanceMetricsContent[]> => {
         running: e.running,
         phase: ( e.phase != null && e.phase ) || "unknown",
         submitted: labels.get("crownlabs.polito.it/instance-submission-completed") || false,
-        instanceUID: ( e.url != null && e.url.split('/').at(-3) ) || "unknown",
+        instanceUID: ( e.id != null && e.id ) || "unknown",
         instMetricsHost: ( e.url != null && e.url.split('//')[1] ) || "unknown",
         resourcesHistory: [],
-        studentName: "",
-        studentId: labels.get("crownlabs.qtype.moodle.org/matricola") || "none",
+        studentName: undefined,
+        studentId: labels.get("crownlabs.qtype.moodle.org/matricola") || undefined,
       } as InstanceMetricsContent })
   })
 }

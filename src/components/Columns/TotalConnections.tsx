@@ -52,18 +52,18 @@ const TotalConnections: FC<TotalConnectionsContent> = props => {
   ];
 
   const getDataSource = (connections: ConnInfo[]) => {
-    return connections.map( (conn, index) => { return {
-      ip: conn.ip, 
-      key:conn.connUid, 
-      connNum: index + 1,
-      label:getLabelFromIP(conn.ip).label, 
-      connTime: new Date(conn.connTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'}),
-      disconnTime: (conn.active && '-')|| new Date(conn.disconnTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'})} } )
+    return connections.sort((a,b) => new Date(b.connTime).getTime() - new Date(a.connTime).getTime())
+           .map( (conn, index) => { return {
+              ip: conn.ip, 
+              key:conn.connUid, 
+              connNum: index + 1,
+              label:getLabelFromIP(conn.ip).label, 
+              connTime: new Date(conn.connTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'}),
+              disconnTime: (conn.active && '-')|| new Date(conn.disconnTime).toLocaleDateString("it-IT", {hour: '2-digit', minute:'2-digit'})} } )
   }
 
   const content = (
-      <Table columns={columns} size="small" pagination={{ position: [] }} 
-        dataSource={getDataSource(props.connections.sort((a,b) => b.connTime.getTime() - a.connTime.getTime()))}/>
+      <Table columns={columns} size="small" pagination={{ position: [] }} dataSource={getDataSource(props.connections)}/>
   );
 
   return (

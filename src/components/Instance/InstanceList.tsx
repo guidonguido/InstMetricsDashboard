@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getLabelFromIP } from '../../global/argument';
-import { InstanceMetricsContent } from "./InstanceMetrics"
 import { getInstances } from '../../API/ExamAgentAPI';
 import { Col, Row, Table, Popover, Alert } from 'antd';
-import { SortOrder } from 'antd/lib/table/interface';
 import Search from 'antd/lib/input/Search';
+import { SortOrder } from 'antd/lib/table/interface';
 import { Resources, getAvgCPU, getAvgMEM, getAvgNET, ConnInfo } from '../../models/Resources';
 import { InstanceStatusPopoverCont, CPUPopoverCont, 
   MEMPopoverCont, NETPopoverCont, ActiveConnPopoverCont, TotalConnPopoverCont } from '../../models/PopoverContent';
@@ -27,6 +26,17 @@ interface DataType {
   activeConn: ConnInfo[],
   totalConn: ConnInfo[],
   actions: TableActionsContent
+}
+
+export interface InstanceMetricsContent {
+  phase: string,
+  running: boolean,
+  submitted: boolean,
+  instanceUID: string;
+  instMetricsHost?: string;
+  resourcesHistory: Resources[];
+  studentName: string | undefined;
+  studentId: string | undefined;
 }
 
 const InstanceList = () => {
@@ -62,7 +72,7 @@ const InstanceList = () => {
         }
         
         ws.onerror = (error) => {
-          console.log(`WebSocket error: ${error}`);
+          console.log(`WebSocket error: `, error);
           instanceMap.get(instance.instanceUID)!.resourcesHistory = [];
           setConnectedInstances((oldCI) => oldCI.filter(ci => ci !== instance.instanceUID));
         }
@@ -86,7 +96,7 @@ const InstanceList = () => {
               return newIM;
             })
           } catch (error) {
-            console.log(`WebSocket onmessage error: ${error}`);
+            console.log(`WebSocket onmessage error: `, error);
           }
         }
       }
@@ -127,7 +137,7 @@ const InstanceList = () => {
       const connections = instanceMetrics[1].resourcesHistory.at(-1)?.connections;
       let data: DataType = {
         key: instanceMetrics[0],
-        studentName: `${instanceMetrics[1].studentName} ${instanceMetrics[1].studentId}`,
+        studentName: instanceMetrics[1].studentId ? instanceMetrics[1].studentId : instanceMetrics[1].instanceUID,
         instanceStatus: {resourcesHistory: instanceMetrics[1].resourcesHistory, running: instanceMetrics[1].running, phase: instanceMetrics[1].phase, submitted: instanceMetrics[1].submitted},
         CPU: instanceMetrics[1].resourcesHistory,
         MEM: instanceMetrics[1].resourcesHistory,
@@ -177,6 +187,7 @@ const InstanceList = () => {
   }
 
   const sortNET = (a: DataType, b: DataType): number => {
+    if( a.NET.at(-1)?.connections?.length === 0 || a.NET.length === 0 ) return -1;
     let warning_a = 0;
     let warning_b = 0;
     const avgNET_a = getAvgNET(a.NET);
@@ -196,6 +207,8 @@ const InstanceList = () => {
       title: "Student",
       dataIndex: "studentName",
       key: "studentName",
+      width: "12%",
+      render: (name: string) => <div style={{maxWidth:"170px", textOverflow:"ellipsis", overflow:"hidden", whiteSpace: "nowrap" }}>{name}</div>,
       sorter: (a: DataType, b: DataType) => a.studentName.localeCompare(b.studentName),
     },
     {
@@ -234,7 +247,7 @@ const InstanceList = () => {
       key: "NET",
       align: "center" as const,
       render: (rh: Resources[]) => <NETStatus resourcesHistory={rh}/>,
-      sorter: sortNET,
+      sorter: (a: DataType, b: DataType) => sortNET(a, b),
       showSorterTooltip: false,
       sortDirections: ["descend" as SortOrder]
     },

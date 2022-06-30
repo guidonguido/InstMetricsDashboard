@@ -99,12 +99,12 @@ const InstanceStatus: FC<InstanceStatusContent> = props => {
         <Tooltip title="Instance Terminated">
           <StopSvg width={'25px'} height={'25px'}/>
         </Tooltip> ) || (
-          props.phase === "Starting" && <Tag icon={<SyncOutlined spin />} color="processing"> processing</Tag>
+          props.phase !== "Ready" && props.phase !== "Off"  && <Tag icon={<SyncOutlined spin />} color="lime">{props.phase}</Tag>
         ) || (
           props.resourcesHistory.length === 0 && <Tooltip title="Waiting for metrics"> <Spin/> </Tooltip>
         )}
       
-      {props.resourcesHistory.length > 0 && 
+      { props.running && props.resourcesHistory.length > 0 && 
         <Tooltip title={warningInfo?.warningMsg}>
           { warningInfo?.warningGrade === 'grn' && <GrnSvg width={'25px'} height={'25px'}/>}
           { warningInfo?.warningGrade === 'yel' && <YelSvg width={'25px'} height={'25px'}/>}
