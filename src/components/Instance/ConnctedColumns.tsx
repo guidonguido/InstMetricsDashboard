@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { getLabelFromIP } from "../../global/argument";
 
 interface ConnectedFromContent {
   ip: string;
@@ -15,8 +16,12 @@ export const ConnectedFrom: FC<ConnectedFromContent> = (props) => {
         .then((response) => {
           let data = response.json();
           data.then(response => {
-            setIPCountry(`,${response.country_code}` || "unknown");
-            setIPCity(response.city || "");
+            if (!response.country_code) {
+              setIPCountry(getLabelFromIP(props.ip).label)
+            } else {
+              setIPCountry(`,${response.country_code}` || "");
+              setIPCity(response.city || "");
+            }
           })
         })
         .catch((error) => {

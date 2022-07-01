@@ -26,25 +26,26 @@ const TableActions: FC<TableActionsContent> = props => {
   };
 
   return (
-    <Row justify="space-evenly">
+    <Row justify="end">
       { props.resourcesHistory.length > 0 && 
         <>
-          <Col>
+          <Col span={4}>
             <Tooltip title={"Get more system and connections info"}>
               <More onClick={showModal} width={'25px'} height={'25px'} style={{cursor:"pointer"}}/>
             </Tooltip>
           </Col>
 
           <Modal 
-          visible={isModalVisible} 
-          closable={false} 
-          maskClosable={true}
-          keyboard={true}
-          bodyStyle={{padding:'0'}}
-          onCancel={handleCancel}
-          width={'800px'}
-          footer={[
-            <Button key="close" onClick={handleCancel}> Close </Button>
+            visible={isModalVisible} 
+            closable={true} 
+            maskClosable={true}
+            keyboard={true}
+            bodyStyle={{padding:'0'}}
+            onCancel={handleCancel}
+            width={'800px'}
+            title={"Instance Info"}
+            footer={[
+              <Button key="close" onClick={handleCancel}> Close </Button>
           ]}>
             <InstanceMetricsModal resourcesHistory={props.resourcesHistory} instanceRefLink={props.instanceRefLink}/>
           </Modal>
@@ -53,14 +54,14 @@ const TableActions: FC<TableActionsContent> = props => {
 
       { props.instanceRefLink !== "unknown" && 
         <>
-          <Col>
+          <Col span={4} offset={4}>
             <Tooltip title={"Go to instance"}>
               <a href={`https://${props.instanceRefLink}`} target="_blank" rel="noopener noreferrer">
                 <Link width={'25px'} height={'25px'}/>
               </a>
             </Tooltip>
           </Col>
-          <Col>
+          <Col span={5} offset={4}>
             <Tooltip title={"Go to instance in View Mode"}>
               <a href={`https://${props.instanceRefLink}#readonly,noresize`} target="_blank" rel="noopener noreferrer">
                     <View width={'25px'} height={'25px'}/>

@@ -41,6 +41,8 @@ const getInstances = async (): Promise<InstanceMetricsContent[]> => {
         resourcesHistory: [],
         studentName: undefined,
         studentId: labels.get("crownlabs.qtype.moodle.org/matricola") || undefined,
+        quizID: labels.get("crownlabs.qtype.moodle.org/quizid") || undefined,
+        codIns: labels.get("crownlabs.qtype.moodle.org/codins") || undefined,
       } as InstanceMetricsContent })
   })
 }

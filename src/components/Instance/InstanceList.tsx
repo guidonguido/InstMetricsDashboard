@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getLabelFromIP } from '../../global/argument';
 import { getInstances } from '../../API/ExamAgentAPI';
 import { Col, Row, Table, Popover, Alert } from 'antd';
 import Search from 'antd/lib/input/Search';
 import { SortOrder } from 'antd/lib/table/interface';
-import { Resources, getAvgCPU, getAvgMEM, getAvgNET, ConnInfo } from '../../models/Resources';
+import { Resources, getAvgCPU, getAvgMEM, ConnInfo } from '../../models/Resources';
 import { InstanceStatusPopoverCont, CPUPopoverCont, 
   MEMPopoverCont, NETPopoverCont, ActiveConnPopoverCont, TotalConnPopoverCont } from '../../models/PopoverContent';
 import { DashboardError } from '../../models/DashboardError';
+import Filters from './Filters';
 import InstanceStatus, { InstanceStatusContent } from '../Columns/InstanceStatus';
 import TableActions, { TableActionsContent } from '../Columns/TableActions';
 import ActiveConnections from '../Columns/ActiveConnections';
@@ -15,6 +15,7 @@ import TotalConnections from '../Columns/TotalConnections';
 import CPUStatus from '../Columns/CPUStatus';
 import MEMStatus from '../Columns/MEMStatus';
 import NETStatus from '../Columns/NETStatus';
+import { getLabelFromIP } from '../../global/argument';
 
 interface DataType {
   key: string;
@@ -32,11 +33,13 @@ export interface InstanceMetricsContent {
   phase: string,
   running: boolean,
   submitted: boolean,
-  instanceUID: string;
-  instMetricsHost?: string;
-  resourcesHistory: Resources[];
-  studentName: string | undefined;
-  studentId: string | undefined;
+  instanceUID: string,
+  instMetricsHost?: string,
+  resourcesHistory: Resources[],
+  studentName: string | undefined,
+  studentId: string | undefined,
+  codIns: string,
+  quizID: string,
 }
 
 const InstanceList = () => {
@@ -45,7 +48,11 @@ const InstanceList = () => {
   const [connectedInstances, setConnectedInstances] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [instanceData, setInstanceData] = useState<DataType[]>([]);
+  const [runningOnly, setRunningOnly] = useState(false);
   const [error, setError] = useState<DashboardError>({ activeError: false, errorMessage: "" });
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [lastWsMessage, setLastWsMessage] = useState<Date>(new Date());
+  // const [quizList, setQuizList] = useState<QuizIns[]>([]);
 
   useEffect(() => {
     updateInstanceMap();
@@ -79,11 +86,13 @@ const InstanceList = () => {
         
         ws.onmessage = (e) => {
           try {
-            if( instanceMap.get(instance.instanceUID)?.phase !== "Ready" ) {
+            if( !instanceMap.has(instance.instanceUID) || instanceMap.get(instance.instanceUID)?.phase !== "Ready" ) {
               ws.close();
+              setConnectedInstances((oldCI) => oldCI.filter(ci => ci !== instance.instanceUID));
               console.log(`WebSocket connected closed due to ${instanceMap.get(instance.instanceUID)?.phase} instance: ${ws.url}`);
               return;
             }
+            
             setInstanceMap( oldInstanceMap => {
               let newIM = new Map(oldInstanceMap);
               if( newIM.has(instance.instanceUID) ) {
@@ -92,6 +101,7 @@ const InstanceList = () => {
                   newIM.get(instance.instanceUID)!.resourcesHistory.shift();
                 }
               }
+              setLastWsMessage(new Date());
               setInstanceData(mapInstanceData(newIM));
               return newIM;
             })
@@ -107,7 +117,18 @@ const InstanceList = () => {
   const updateInstanceMap = async () => {
     try {
       const instances: InstanceMetricsContent[] = await getInstances();
-      setError({ activeError: false, errorMessage: "" });
+
+      setLastWsMessage( oldData => {
+        if(oldData.getTime() + 15000 < new Date().getTime() && instances.filter(i => i.phase === "Ready").length > 0) {
+          setError({ activeError: true, errorMessage: "Page data may not be up to date. Please refresh the page." });
+        } else {
+          setError({ activeError: false, errorMessage: "" });
+        }
+        return oldData;
+      })
+
+      // setQuizList( instances.map(i => ({ codIns: i.codIns, quizID: i.quizID })).filter(i => i.codIns !== undefined || i.quizID !== undefined) );
+
       setInstanceMap( oldInstanceMap => {
         let newInstanceMap = new Map(oldInstanceMap);
         instances.forEach(instance => {
@@ -151,8 +172,10 @@ const InstanceList = () => {
   }
 
   const getFilteredInstanceData = (): DataType[] => {
-    if (searchInput === "")  return instanceData 
-    return instanceData.filter( (data) => data.studentName.toLowerCase().includes(searchInput.toLowerCase()) )
+    let newInstanceData  = instanceData;
+    if (searchInput !== "")  newInstanceData = instanceData.filter( (data) => data.studentName.toLowerCase().includes(searchInput.toLowerCase()) )
+    if( runningOnly ) newInstanceData = newInstanceData.filter(i => i.instanceStatus.running);
+    return newInstanceData;
   }
 
   const onSearch = (value: string) => {
@@ -188,18 +211,19 @@ const InstanceList = () => {
 
   const sortNET = (a: DataType, b: DataType): number => {
     if( a.NET.at(-1)?.connections?.length === 0 || a.NET.length === 0 ) return -1;
-    let warning_a = 0;
-    let warning_b = 0;
-    const avgNET_a = getAvgNET(a.NET);
-    const avgNET_b = getAvgNET(b.NET);
-    
-    if ( Array.from(avgNET_a).filter(e => e[1] > 800).length > 0 ) warning_a += 2;
-    else if(Array.from(avgNET_a).filter(e => e[1] > getLabelFromIP(e[0]).latencyWarning).length > 0) warning_a += 1;
 
-    if ( Array.from(avgNET_b).filter(e => e[1] > 800).length > 0 ) warning_b += 2;
-    else if(Array.from(avgNET_b).filter(e => e[1] > getLabelFromIP(e[0]).latencyWarning).length > 0) warning_b += 1;
+    const maxLatency_a = Math.max(...a.NET.at(-1)?.connections?.map((conn: ConnInfo) => conn.latency) || [0]);
+    const maxLatency_b = Math.max(...b.NET.at(-1)?.connections?.map((conn: ConnInfo) => conn.latency) || [0]);
+    return maxLatency_a - maxLatency_b;
+  }
+
+  const sortActiveConnections = (a: DataType, b: DataType): number => {
+    if( a.NET.at(-1)?.connections?.length === 0 || a.NET.length === 0 ) return -1;
+    if (a.totalConn.length !== b.totalConn.length) return a.totalConn.length - b.totalConn.length;
     
-    return warning_a - warning_b;;
+    const label_a = getLabelFromIP(a.NET.at(-1)?.connections?.sort((a,b) => a.connUid.localeCompare(b.connUid))[0].ip || "1.1.1.1").label  
+    const label_b = getLabelFromIP(b.NET.at(-1)?.connections?.sort((a,b) => a.connUid.localeCompare(b.connUid))[0].ip || "1.1.1.1").label  
+    return label_a.localeCompare(label_b);
   }
 
   const tableColumns = [
@@ -257,7 +281,7 @@ const InstanceList = () => {
       key: "activeConn",
       align: "center" as const,
       render: (ci: ConnInfo[]) => <ActiveConnections connections={ci}/>,
-      sorter: (a: DataType, b: DataType) => a.activeConn.length - b.activeConn.length,
+      sorter: (a: DataType, b: DataType) => sortActiveConnections(a,b),
       showSorterTooltip: false,
     },
     {
@@ -284,12 +308,12 @@ const InstanceList = () => {
       <Row justify='center' style={{paddingBottom:"30px"}}> 
         <Alert message={error.errorMessage} type="error" closable={false} showIcon/> 
       </Row> }
+      <Filters runningOnly={runningOnly} setRunningOnly={setRunningOnly}/>
       <Row justify='center'>
         <Col lg={23} sm={24} xs={24} className="title instance-el">
           <Search placeholder="Search for student id" allowClear onChange={(e) => onSearch(e.target.value)} onSearch={onSearch} style={{ width: 400, marginBottom:40 }}/>
-          <Table pagination={{ pageSize: 10, showTotal: total => `Total ${total} instances`, showSizeChanger: false }} size="small"
-                 columns={tableColumns} 
-                 dataSource={getFilteredInstanceData()} />
+          <Table pagination={{ showTotal: total => `Total ${total} instances`, showSizeChanger: true}} 
+                 size="small" columns={tableColumns} dataSource={getFilteredInstanceData()} />
         </Col>
       </Row>
     </>
