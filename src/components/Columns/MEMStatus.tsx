@@ -13,6 +13,7 @@ const MEMStatus: FC<MEMStatusContent> = props => {
   const [currentMEM, setCurrentMEM] = useState(0);
   const [wargingStatus, setWargingStatus] = useState<string>("grn");
 
+  // update MEM worning status when a new Memory metric is received
   useEffect(() => {
     setWargingStatus(getMEMWarningStatus(props.resourcesHistory));
     setCurrentMEM(props.resourcesHistory.at(-1)?.mem || 0);

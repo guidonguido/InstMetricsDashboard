@@ -5,7 +5,7 @@ import { Popover, Tag } from 'antd';
 import Table, { ColumnsType } from 'antd/lib/table';
 
 
-export interface ActiveConnectionsContent {
+interface ActiveConnectionsContent {
   connections: ConnInfo[],
 }
 
@@ -38,20 +38,21 @@ const ActiveConnections: FC<ActiveConnectionsContent> = props => {
     },
   ];
 
-  const getDataSource = (connections: ConnInfo[]) => {
+  const getConnectedInfoList = (connections: ConnInfo[]) => {
     return connections.map( conn => { return {key:conn.connUid, label:getLabelFromIP(conn.ip).label, ip: conn.ip, latency: `${conn.latency}ms`} } )
   }
 
-  const content = (
-      <Table columns={columns} dataSource={getDataSource(props.connections)} size="small" pagination={{ position: [] }} />
+  const allEqual = (arr: ConnInfo[]) => arr.every( (v: ConnInfo) => v.ip === arr[0].ip )
+
+  const popoverContent = (
+      <Table columns={columns} dataSource={getConnectedInfoList(props.connections)} size="small" pagination={{ position: [] }} />
   );
 
-  const allEqual = (arr: ConnInfo[]) => arr.every( (v: ConnInfo) => v.ip === arr[0].ip )
 
   return (
     <>
       { ( props.connections.length === 0 && <span>0</span> )||
-        <Popover content={content} title="Active connections to instance from">
+        <Popover content={popoverContent} title="Active connections to instance from">
           <Tag color="blue">{ getLabelFromIP(props.connections.sort((a,b) => a.connUid.localeCompare(b.connUid))[0].ip).label }</Tag>
           {props.connections.length > 1 && <Tag color={(allEqual(props.connections) && "blue") || "volcano"}>+{props.connections.length-1} </Tag>}
         </Popover>

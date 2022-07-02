@@ -1,12 +1,10 @@
 import { FC } from "react";
-
-import { Resources } from "../../models/Resources";
 import { Row, Spin } from "antd";
 import GaugeChart from '../Chart/GaugeChart';
-
+import { Resources } from "../../models/Resources";
 import './ModalContent.css';
 
-export interface SysMetricsContent {
+interface SysMetricsContent {
   resourcesHistory: Resources[];
 }
 
@@ -26,7 +24,6 @@ const SysMetrics: FC<SysMetricsContent> = props => {
         </div>}
     </>
   )
-
 } 
 
 export default SysMetrics

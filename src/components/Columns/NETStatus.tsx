@@ -19,6 +19,7 @@ const NETStatus: FC<NETStatusContent> = props => {
   const [currentHighestLat, setCurrentHighestLat] = useState(0);
   const [warningStatus, setWarningStatus] = useState<string>("grn");
 
+  // update NET worning status when a new ConnInfo[] metric is received
   useEffect(() => {
     setWarningStatus(getNETWarningStatus(props.resourcesHistory));
     setCurrentHighestLat(getHighestLat(props.resourcesHistory.at(-1)?.connections || []));

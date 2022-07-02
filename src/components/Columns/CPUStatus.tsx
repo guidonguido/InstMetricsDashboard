@@ -1,11 +1,11 @@
 import { FC, useEffect, useState } from 'react';
+import Tooltip from 'antd/lib/tooltip';
+import { Resources, getAvgCPU } from "../../models/Resources";
 import { ReactComponent as GrnSvg } from  '../../assets/grn-stat.svg';
 import { ReactComponent as YelSvg } from  '../../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../../assets/red-stat.svg';
-import { Resources, getAvgCPU } from "../../models/Resources";
-import Tooltip from 'antd/lib/tooltip';
 
-export interface CPUStatusContent {
+interface CPUStatusContent {
   resourcesHistory: Resources[],
 }
 
@@ -13,6 +13,7 @@ const CPUStatus: FC<CPUStatusContent> = props => {
   const [currentCPU, setCurrentCPU] = useState(0);
   const [warningStatus, setWarningStatus] = useState<string>("grn");
 
+  // update CPU worning status when a new CPU metric is received
   useEffect(() => {
     setWarningStatus(getCPUWarningStatus(props.resourcesHistory));
     setCurrentCPU(props.resourcesHistory.at(-1)?.cpu || 0);

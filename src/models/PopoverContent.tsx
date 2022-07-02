@@ -6,8 +6,8 @@ import { ReactComponent as YelSvg } from  '../assets/yel-stat.svg';
 import { ReactComponent as RedSvg } from  '../assets/red-stat.svg';
 
 /**
- * Table Columns content descriptions in Popover content
- *  */
+ * Homapege Table Columns Popover content
+ */
 export const InstanceStatusPopoverCont = (
   <Content>
     <Row> <GrnSvg width={'15px'} height={'15px'} style={{paddingTop:'5px'}}/> Current CPU, Memory are under warning threshold. </Row>

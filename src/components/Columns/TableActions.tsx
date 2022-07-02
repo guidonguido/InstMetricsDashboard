@@ -4,7 +4,7 @@ import {Row, Col} from "antd/es/grid";
 import Tooltip from "antd/es/tooltip";
 import Modal from "antd/lib/modal/Modal";
 import { Resources } from "../../models/Resources";
-import InstanceMetricsModal from "../Instance/InstanceMetricsModal";
+import InstanceMetricsModal from "../Modal/InstanceMetricsModal";
 import { ReactComponent as Link } from  '../../assets/link.svg';
 import { ReactComponent as View } from  '../../assets/spy.svg';
 import { ReactComponent as More } from  '../../assets/more.svg';

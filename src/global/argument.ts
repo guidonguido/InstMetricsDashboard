@@ -40,7 +40,7 @@ window.connLabels = [
   {label: "Laib2S",          subnet: "192.168.158.64/26", latencyWarning: 120} as ConnLabel,
   {label: "Laib1MV",         subnet: "192.168.1.64/26",   latencyWarning: 120} as ConnLabel,
   {label: "VLAIB",           subnet: "192.168.64.0/23",   latencyWarning: 120} as ConnLabel,
-  {label: "POLITO-PUBLIC",   subnet: "130.192.0.0/16",    latencyWarning: 120} as ConnLabel,
+  {label: "POLITO-WIRED",   subnet: "130.192.0.0/16",    latencyWarning: 120} as ConnLabel,
 
   
 ];

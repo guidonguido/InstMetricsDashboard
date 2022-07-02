@@ -67,11 +67,9 @@ const TotalConnections: FC<TotalConnectionsContent> = props => {
   );
 
   return (
-    <>
-      <Popover content={content} title="Active connections to instance from">
-        <Tag color="volcano">{props.connections.length}</Tag>
-      </Popover>
-    </>
+    <Popover content={content} title="Active connections to instance from">
+      <Tag color="volcano">{props.connections.length}</Tag>
+    </Popover>
   )
 }
 

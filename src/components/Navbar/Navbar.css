@@ -1,5 +1,5 @@
 
-.menuBar {
+.menu-bar {
   height: 50px;
   line-height: 50px;
   background: #003676;
@@ -9,7 +9,7 @@
   margin-bottom: 35px;
 }
 
-.pageTitle {
+.page-title {
   color: #cae2ff;
   font-size: 1.1em;
   font-weight: bold;

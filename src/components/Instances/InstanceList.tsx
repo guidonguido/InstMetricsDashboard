@@ -54,6 +54,7 @@ const InstanceList = () => {
   const [lastWsMessage, setLastWsMessage] = useState<Date>(new Date());
   // const [quizList, setQuizList] = useState<QuizIns[]>([]);
 
+  // on component mount
   useEffect(() => {
     updateInstanceMap();
     const interval = setInterval(async () => {
@@ -64,6 +65,7 @@ const InstanceList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // when instanceMap is updated
   useEffect( () => {
     instanceMap.forEach(instance => {
       if (connectedInstances.indexOf(instance.instanceUID) === -1 && instance.phase === "Ready" && instance.instMetricsHost !== "unknown" ) {

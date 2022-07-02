@@ -61,8 +61,8 @@ const ConnMetrics: FC<ConnMetricsContent> = props => {
     },
   ];
 
-  const getDataSource = (connections: ConnInfo[]) => {
-    return props.connections
+  const getConnectedInfoList = (connections: ConnInfo[]) => {
+    return connections
           .sort((a,b) => new Date(b.connTime).getTime() - new Date(a.connTime).getTime())
           .map( conn => { return {
             key: conn.connUid, status: conn.active, ip: conn.ip,
@@ -79,12 +79,11 @@ const ConnMetrics: FC<ConnMetricsContent> = props => {
         { ( props.connections.length === 0 && 
           <Spin tip='Waiting for Connections'/> ) ||
           <Row className="modal-content">
-            <Table columns={columns} size="small" dataSource={getDataSource(props.connections)}/>
+            <Table columns={columns} size="small" dataSource={getConnectedInfoList(props.connections)}/>
           </Row>
         }
     </>
   )
-
 } 
 
 export default ConnMetrics

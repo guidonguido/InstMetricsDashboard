@@ -6,8 +6,8 @@ interface ConnectedFromContent {
 }
 
 export const ConnectedFrom: FC<ConnectedFromContent> = (props) => {
-  const [IPCountry, setIPCountry] = useState<string>("IT");
-  const [IPCity, setIPCity] = useState<string>(",");
+  const [IPCountry, setIPCountry] = useState<string>("");
+  const [IPCity, setIPCity] = useState<string>("");
 
   useEffect(() => {
     const getGeoInfo = () => {
@@ -19,7 +19,7 @@ export const ConnectedFrom: FC<ConnectedFromContent> = (props) => {
             if (!response.country_code) {
               setIPCountry(getLabelFromIP(props.ip).label)
             } else {
-              setIPCountry(`,${response.country_code}` || "");
+              setIPCountry(`, ${response.country_code}` || "");
               setIPCity(response.city || "");
             }
           })
@@ -43,7 +43,6 @@ export const ConnectedProvider: FC<ConnectedFromContent> = (props) => {
   useEffect(() => {
     const getGeoInfo = () => {
       fetch(`https://ipapi.co/${props.ip}/json/`, {cache: "force-cache"})
-        // fetch(`https://cldashboard.guidongui.it/api/ipapi/${props.IP}`)
         .then((response) => {
           let data = response.json();
           data.then(response => {

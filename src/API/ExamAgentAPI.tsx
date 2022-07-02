@@ -1,12 +1,11 @@
 import { InstanceAdapter } from "../models/InstanceAdapter";
-import { InstanceMetricsContent } from "../components/Instance/InstanceList";
+import { InstanceMetricsContent } from "../components/Instances/InstanceList";
 
 const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<any> => {
   return new Promise((resolve, reject) => {
     httpResponsePromise
       .then((response: { ok: any; json: () => Promise<any>; }) => {
         if (response.ok) {
-
          // always return {} from server, never null or non json, otherwise it will fail
          response.json()
             .then( json => resolve(json) )
@@ -23,9 +22,11 @@ const getInstanceAdapter = async (httpResponsePromise: Promise<any>): Promise<an
   });
 }
 
+// getInstances returns a Promise of a InstanceMetricsContent list where each element
+// contains all the instance information useful for the dashboard
 const getInstances = async (): Promise<InstanceMetricsContent[]> => {
-  // let API_URL = "https://cldashboard.guidongui.it/api/instances/";
-  let API_URL = `${process.env.PUBLIC_URL}/api/instances/`;
+  let API_URL = "https://cldashboard.guidongui.it/api/instances/";
+  // let API_URL = `${process.env.PUBLIC_URL}/api/instances/`;
   if(window.codIns !== null && window.quizID !== null) 
     API_URL += `?crownlabs.qtype.moodle.org/quizid=${window.quizID}&crownlabs.qtype.moodle.org/codins=${window.codIns}`;
 
